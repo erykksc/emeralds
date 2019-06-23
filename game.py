@@ -147,6 +147,10 @@ class Game:
         json_loader.updatePair("traps", [])
         json_loader.updatePair("roundNum", json_loader.readValue("roundNum") +1)
 
+        self.roundDeck = self.gameDeck
+        self.traps=[] #list of traps that were already revealed
+        self.tilePath=[]
+
         print("playing shortRound")
         self.playShortRound()
         while not(self.allPlayersInCamp()):
@@ -158,6 +162,7 @@ class Game:
         self.decisions()
         self.goingBack()
         self.tileReveal() #lose or win
+
         self.updateRewardForGoingBack()
 
     def decisions(self):
@@ -235,14 +240,15 @@ class Game:
 
                     self.gameDeck.removeCardFromDeck("trap", self.checkTraps())
                     json_loader.updatePair("killed_by", self.checkTraps())
-                    print("trap found")
+                    json_loader.updatePair("state", 2)
+
             elif tileRevealed.type=="gem":
                 self.roundDeck.removeCardFromDeck("gem", tileRevealed.amountOfGems)
                 for playerIndex in playersE:
                     self.players[playerIndex].receiveGems(math.floor(tileRevealed.gemsLeft/len(playersE)))
                 self.tilePath[len(self.tilePath)-1].gemsLeft %= len(playersE)
-                print(self.tilePath[len(self.tilePath)-1].gemsLeft)
                 self.copyPath2Json()
+
             else:
                 self.roundDeck.removeCardFromDeck("relict", tileRevealed.value)
 

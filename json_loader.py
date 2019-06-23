@@ -20,6 +20,7 @@ def readValue(key):
 def createJson():
     dict={
         "waiting4Answers": False,
+        "ready2Continue": False,
         "players": {},
         "tilePath": [],
         "traps": [],
