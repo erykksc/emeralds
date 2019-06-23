@@ -143,13 +143,12 @@ class Game:
             self.playRound()
 
     def playRound(self):
+        self.tilePath=[]
         json_loader.updatePair("tilePath", [])
+        self.traps=[] #list of traps that were already revealed
         json_loader.updatePair("traps", [])
         json_loader.updatePair("roundNum", json_loader.readValue("roundNum") +1)
-
         self.roundDeck = self.gameDeck
-        self.traps=[] #list of traps that were already revealed
-        self.tilePath=[]
 
         print("playing shortRound")
         self.playShortRound()
@@ -160,8 +159,14 @@ class Game:
     def playShortRound(self):
         self.gameDeck.resetGemCards()
         self.decisions()
-        self.goingBack()
-        self.tileReveal() #lose or win
+        self.wait4ready2Continue()
+        if self.goingBack():
+            self.wait4ready2Continue()
+
+        if self.tileReveal(): #lose or win
+            self.wait4ready2Continue()
+            self.consequences()
+            self.wait4ready2Continue()
 
         self.updateRewardForGoingBack()
 
@@ -170,7 +175,6 @@ class Game:
         self.copyPlayersFromGameState()
 
     def wait4decisions(self):
-
         json_loader.updatePair("state", 0)
         json_loader.updatePair("waiting4Answers", True)
 
@@ -183,24 +187,42 @@ class Game:
 
     def goingBack(self):
         if not(self.allPlayersInCamp()):
+            json_loader.updatePair("state", 1)
             playersGB = [] #players going back
+
             for playerIndex in range(len(self.players)):
                 if not self.players[playerIndex].inCamp:
                     if not self.players[playerIndex].explores:
                         playersGB.append(playerIndex)
-            for tileIndex in range(len(self.tilePath)-1, -1, -1): #index is decrementing for the entire path
-                tile = self.tilePath[tileIndex]
-                if tile.type == "gems" and tile.gemsLeft>0:
-                    for playerIndex in playersGB:
-                        self.players[playerIndex].receiveGems(math.floor(tile.gemsLeft/len(playersGB)))
-                    self.tilePath[tileIndex].gemsLeft %= len(playersGB)
-                elif tile.type == "relict" and len(playersGB)==1:
-                    self.players[playersGB[0]].receiveGems(tile.value)
-                    self.gameDeck.removeCardFromDeck("relict", tile.value)
-            for playerIndex in playersGB:
-                self.players[playerIndex].secureGems()
-                self.players[playerIndex].inCamp = True
-            self.copyPlayersToGameState()
+
+            if len(playersGB)>0:
+
+                for tileIndex in range(len(self.tilePath)-1, -1, -1): #index is decrementing for the entire path
+                    tile = self.tilePath[tileIndex]
+
+                    if tile.type == "gems" and tile.gemsLeft>0:
+                        for playerIndex in playersGB:
+                            self.players[playerIndex].receiveGems(math.floor(tile.gemsLeft/len(playersGB)))
+                        self.tilePath[tileIndex].gemsLeft %= len(playersGB)
+
+                    elif tile.type == "relict" and len(playersGB)==1:
+                        self.players[playersGB[0]].receiveGems(tile.value)
+                        self.gameDeck.removeCardFromDeck("relict", tile.value)
+                        relicts = json_loader.readValue("relicts4GoingBack")
+                        self.tilePath.pop(tileIndex)
+                        json_loader.updatePair("relicts4GoingBack", relicts)
+
+                for playerIndex in playersGB:
+                    self.players[playerIndex].secureGems()
+                    self.players[playerIndex].inCamp = True
+                self.copyPlayersToGameState()
+                return True
+        return False
+
+    def wait4ready2Continue(self):
+        while(json_loader.readValue("ready2Continue")==False):
+            time.sleep(1)
+        json_loader.updatePair("ready2Continue", False)
 
     def updateRewardForGoingBack(self):
         gemsAmount = 0
@@ -215,15 +237,21 @@ class Game:
 
     def tileReveal(self):
         if not(self.allPlayersInCamp()):
-            json_loader.updatePair("state", 1)
+            json_loader.updatePair("state", 2)
+            tileRevealed = self.roundDeck.pickCard()
+            self.tilePath.append(tileRevealed)
+            self.copyPath2Json()
+            return True
+        return False
+
+    def consequences(self):
+        if not(self.allPlayersInCamp()):
+            tileRevealed = self.tilePath[len(self.tilePath)-1]
             playersE = [] #players exploring (indexes)
             for playerIndex in range(len(self.players)):
                 if not self.players[playerIndex].inCamp:
                     if self.players[playerIndex].explores:
                         playersE.append(playerIndex)
-            tileRevealed = self.roundDeck.pickCard()
-            self.tilePath.append(tileRevealed)
-            self.copyPath2Json()
 
             if tileRevealed.type=="trap":
                 self.roundDeck.removeCardFromDeck("trap", tileRevealed.name)
@@ -233,16 +261,22 @@ class Game:
                 traps.append(tileRevealed.getName())
                 json_loader.updatePair("traps", traps)
 
-                if (self.checkTraps()): #check if there are 2 traps of the same kind
+                checkTrapsResult = self.checkTraps()
+                if (checkTrapsResult): #check if there are 2 traps of the same kind
+                    json_loader.updatePair("state", 4)
                     for playerIndex in playersE:
                         self.players[playerIndex].loseUnsecuredGems()
                         self.players[playerIndex].inCamp = True
 
-                    self.gameDeck.removeCardFromDeck("trap", self.checkTraps())
-                    json_loader.updatePair("killed_by", self.checkTraps())
-                    json_loader.updatePair("state", 2)
+                    self.gameDeck.removeCardFromDeck("trap", checkTrapsResult)
+                    json_loader.updatePair("killed_by", checkTrapsResult)
+                    removedCards = json_loader.readValue("removedCards")
+                    removedCards.append(checkTrapsResult)
+                    json_loader.updatePair("removedCards", removedCards)
+
 
             elif tileRevealed.type=="gem":
+                json_loader.updatePair("state", 3)
                 self.roundDeck.removeCardFromDeck("gem", tileRevealed.amountOfGems)
                 for playerIndex in playersE:
                     self.players[playerIndex].receiveGems(math.floor(tileRevealed.gemsLeft/len(playersE)))
@@ -266,7 +300,7 @@ class Game:
 
 if __name__ == "__main__":
     json_loader.createJson()
-    input("Enter when ready:")
+    #input("Enter when ready:")
 
     dict={"player1":{
         "securedGems" : 0,

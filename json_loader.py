@@ -21,13 +21,13 @@ def createJson():
     dict={
         "waiting4Answers": False,
         "ready2Continue": False,
+        "state": 0, #0- decisions, 1 - going back, 2- reveal, 3-consequences, 4-kill
         "players": {},
         "tilePath": [],
         "traps": [],
         "killed_by": "nothing",
         "roundNum": 0,
         "numOfRounds": 5,
-        "state": 0,
         "gems4GoingBack": 0,
         "relicts4GoingBack": [],
         "removedCards":[],

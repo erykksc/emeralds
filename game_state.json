@@ -1,29 +1,28 @@
 {
     "waiting4Answers": true,
+    "ready2Continue": false,
+    "state": 0,
     "players": {
         "player1": {
-            "securedGems": 0,
+            "securedGems": 11,
             "unsecuredGems": 0,
             "inCamp": true,
-            "explores": true
+            "explores": false
         },
         "player2": {
-            "securedGems": 0,
+            "securedGems": 17,
             "unsecuredGems": 0,
             "inCamp": true,
-            "explores": true
+            "explores": false
         }
     },
     "tilePath": [],
     "traps": [],
-    "killed_by": "spiders",
-    "roundNum": 3,
+    "killed_by": "nothing",
+    "roundNum": 4,
     "numOfRounds": 5,
-    "state": 0,
-    "gems4GoingBack": 2,
-    "relicts4GoingBack": [
-        "relict_3"
-    ],
+    "gems4GoingBack": 0,
+    "relicts4GoingBack": [],
     "removedCards": [],
     "playerCount": 2
 }
