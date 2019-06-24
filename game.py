@@ -169,6 +169,7 @@ class Game:
             self.wait4ready2Continue()
 
         self.updateRewardForGoingBack()
+        self.wait4ready2Continue()
 
     def decisions(self):
         self.wait4decisions()
@@ -220,9 +221,9 @@ class Game:
         return False
 
     def wait4ready2Continue(self):
+        json_loader.updatePair("ready2Continue", False)
         while(json_loader.readValue("ready2Continue")==False):
             time.sleep(1)
-        json_loader.updatePair("ready2Continue", False)
 
     def updateRewardForGoingBack(self):
         gemsAmount = 0
