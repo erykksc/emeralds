@@ -1,28 +1,30 @@
 {
-    "waiting4Answers": true,
-    "ready2Continue": false,
-    "state": 0,
+    "waiting4Answers": false,
+    "ready2Continue": true,
+    "state": 2,
     "players": {
         "player1": {
-            "securedGems": 11,
+            "securedGems": 0,
             "unsecuredGems": 0,
             "inCamp": true,
-            "explores": false
+            "explores": true
         },
         "player2": {
-            "securedGems": 17,
+            "securedGems": 0,
             "unsecuredGems": 0,
             "inCamp": true,
-            "explores": false
+            "explores": true
         }
     },
     "tilePath": [],
     "traps": [],
-    "killed_by": "nothing",
-    "roundNum": 4,
+    "killed_by": "lava",
+    "roundNum": 5,
     "numOfRounds": 5,
-    "gems4GoingBack": 0,
+    "gems4GoingBack": 1,
     "relicts4GoingBack": [],
-    "removedCards": [],
+    "removedCards": [
+        "lava"
+    ],
     "playerCount": 2
 }

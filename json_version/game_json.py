@@ -15,6 +15,13 @@ class TrapCard():
     def getName(self):
         return ("trap_" + str(self.name))
 
+    def getDict(self):
+        dict = {
+            "type":self.type,
+            "name":self.name
+        }
+        return dict
+
 class GemCard():
     def __init__(self, amountOfGems):
         self.type = "gem"
@@ -30,13 +37,31 @@ class GemCard():
     def getName(self):
         return ("gem_" + str(self.amountOfGems))
 
+    def getDict(self):
+        dict = {
+            "type":self.type,
+            "amountOfGems":self.amountOfGems,
+            "gemsLeft":self.gemsLeft
+        }
+        return dict
+
 class RelictCard():
     def __init__(self, value):
         self.type = "relict"
         self.value = value
+        self.containsRelict = True
 
     def getName(self):
         return ("relict_" + str(self.value))
+
+    def getDict(self):
+        dict = {
+            "type":self.type,
+            "value":self.value,
+            "containsRelict":self.containsRelict
+        }
+        return dict
+
 
 class Player():
     def __init__(self, nickname):
@@ -114,11 +139,10 @@ class Game:
         return True
 
     def copyPath2Json(self):
-        tilePathNames = []
+        tilePathDicts = []
         for i in range(len(self.tilePath)):
-            tilePathNames.append(self.tilePath[i].getName())
-
-        json_loader.updatePair("tilePath", tilePathNames)
+            tilePathDicts.append(self.tilePath[i].getDict())
+        json_loader.updatePair("tilePath", tilePathDicts)
 
     def copyPlayersFromGameState(self):
         self.game_state = json_loader.readFromJson()
@@ -153,23 +177,25 @@ class Game:
         print("playing shortRound")
         self.playShortRound()
         while not(self.allPlayersInCamp()):
+            self.gameDeck.resetGemCards()
             print("playing shortRound")
             self.playShortRound()
 
     def playShortRound(self):
-        self.gameDeck.resetGemCards()
         self.decisions()
         self.wait4ready2Continue()
-        if self.goingBack():
-            self.wait4ready2Continue()
+        self.goingBack()
+        self.wait4ready2Continue()
 
         if self.tileReveal(): #lose or win
             self.wait4ready2Continue()
             self.consequences()
             self.wait4ready2Continue()
+        else:
+            self.wait4ready2Continue()
 
-        self.updateRewardForGoingBack()
-        self.wait4ready2Continue()
+        if self.updateRewardForGoingBack():
+            self.wait4ready2Continue()
 
     def decisions(self):
         self.wait4decisions()
@@ -187,8 +213,8 @@ class Game:
         json_loader.updatePair("waiting4Answers", False)
 
     def goingBack(self):
+        json_loader.updatePair("state", 1)
         if not(self.allPlayersInCamp()):
-            json_loader.updatePair("state", 1)
             playersGB = [] #players going back
 
             for playerIndex in range(len(self.players)):
@@ -226,19 +252,22 @@ class Game:
             time.sleep(1)
 
     def updateRewardForGoingBack(self):
-        gemsAmount = 0
-        relictsLeft=[]
-        for tile in self.tilePath:
-            if tile.type == "gem":
-                gemsAmount += tile.gemsLeft
-            elif tile.type == "relict":
-                relictsLeft.append(tile.getName())
-        json_loader.updatePair("gems4GoingBack", gemsAmount)
-        json_loader.updatePair("relicts4GoingBack", relictsLeft)
+        if not self.allPlayersInCamp():
+            gemsAmount = 0
+            relictsLeft=[]
+            for tile in self.tilePath:
+                if tile.type == "gem":
+                    gemsAmount += tile.gemsLeft
+                elif tile.type == "relict":
+                    relictsLeft.append(tile.getName())
+            json_loader.updatePair("gems4GoingBack", gemsAmount)
+            json_loader.updatePair("relicts4GoingBack", relictsLeft)
+            return True
+        return False
 
     def tileReveal(self):
+        json_loader.updatePair("state", 2)
         if not(self.allPlayersInCamp()):
-            json_loader.updatePair("state", 2)
             tileRevealed = self.roundDeck.pickCard()
             self.tilePath.append(tileRevealed)
             self.copyPath2Json()
@@ -255,6 +284,7 @@ class Game:
                         playersE.append(playerIndex)
 
             if tileRevealed.type=="trap":
+                json_loader.updatePair("state", 3)
                 self.roundDeck.removeCardFromDeck("trap", tileRevealed.name)
                 self.traps.append(tileRevealed)
 
@@ -264,7 +294,7 @@ class Game:
 
                 checkTrapsResult = self.checkTraps()
                 if (checkTrapsResult): #check if there are 2 traps of the same kind
-                    json_loader.updatePair("state", 4)
+                    json_loader.updatePair("state", 5)
                     for playerIndex in playersE:
                         self.players[playerIndex].loseUnsecuredGems()
                         self.players[playerIndex].inCamp = True
@@ -275,19 +305,19 @@ class Game:
                     removedCards.append(checkTrapsResult)
                     json_loader.updatePair("removedCards", removedCards)
 
-
             elif tileRevealed.type=="gem":
-                json_loader.updatePair("state", 3)
+                json_loader.updatePair("state", 4)
                 self.roundDeck.removeCardFromDeck("gem", tileRevealed.amountOfGems)
                 for playerIndex in playersE:
                     self.players[playerIndex].receiveGems(math.floor(tileRevealed.gemsLeft/len(playersE)))
                 self.tilePath[len(self.tilePath)-1].gemsLeft %= len(playersE)
-                self.copyPath2Json()
 
             else:
+                json_loader.updatePair("state", 3)
                 self.roundDeck.removeCardFromDeck("relict", tileRevealed.value)
 
             self.copyPlayersToGameState()
+            self.copyPath2Json()
 
     def checkTraps(self):
         trapsChecked=[]

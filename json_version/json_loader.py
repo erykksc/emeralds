@@ -21,7 +21,7 @@ def createJson():
     dict={
         "waiting4Answers": False,
         "ready2Continue": False,
-        "state": 0, #0- decisions, 1 - going back, 2- reveal, 3-consequences, 4-kill
+        "state": 0, #0- decisions, 1 - going back, 2- reveal,3-relict or trap, 4-gem splitting, 5-kill
         "players": {},
         "tilePath": [],
         "traps": [],
