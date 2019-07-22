@@ -14,6 +14,9 @@ class Tile():
     def getType(self):
         return self.type
 
+    def getName(self):
+        return self.type
+
 class TrapCard(Tile):
     def __init__(self, name):
         Tile.__init__(self, "trap")
@@ -148,8 +151,8 @@ class Deck():
         return False
 
 class Game:
-    def __init__(self, deck): #deck should be Deck() class
-        self.players = playersArr
+    def __init__(self, deck=Deck()): #deck should be Deck() class
+        self.players = []
         self.gameDeck = deck
         self.roundDeck = self.gameDeck
         self.roundNum = 0
@@ -179,6 +182,11 @@ class Game:
         self.traps=[]
         self.tilePath = []
         self.roundDeck = self.gameDeck
+
+    def resetDecisions(self):
+        for i in range(len(self.players)):
+            self.players[i].setInCamp(False)
+            self.players[i].setExploring(False)
 
     def getRoundNum(self):
         return self.roundNum
@@ -225,11 +233,11 @@ class Game:
                     self.players[index].setExploring(dictOfPlayersDecisions[playerKeyName])
                     break
 
-    def getPlayersThatDecide(self):
+    def getPlayersNamesThatDecide(self):
         arr=[]
         for player in self.players:
             if not player.inCamp:
-                arr.apend(player)
+                arr.append(player.nickname)
         return arr
 
     def isAnybodyGoingBack(self):
@@ -282,7 +290,7 @@ class Game:
             self.tilePath.append(tileRevealed)
 
     def getRevealedTile(self):
-        return self.tilePath[-1]
+        return self.tilePath[-1].getName()
 
     def resultsOfRevealedTile(self):
         if not(self.allPlayersInCamp()):
@@ -335,23 +343,4 @@ class Game:
         return self.tileMap
 
 if __name__ == "__main__":
-    json_loader.createJson()
-    #input("Enter when ready:")
-
-    dict={"player1":{
-        "securedGems" : 0,
-        "unsecuredGems" : 0,
-        "inCamp" : False,
-        "explores" : True
-        },"player2":{
-        "securedGems" : 0,
-        "unsecuredGems" : 0,
-        "inCamp" : False,
-        "explores" : True
-        }
-    }
-    file=json_loader.readFromJson()
-    file["players"]=dict
-    json_loader.write2json(file)
-    game = Game()
-    game.playGame()
+    pass
