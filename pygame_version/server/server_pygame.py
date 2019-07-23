@@ -30,3 +30,10 @@ class Server():
 
     def waitForPlayersToContinue(self):
         input("\nwaitForPlayersToContinue\nPress enter to continue")
+
+
+class realServer():
+    pass
+
+if __name__=="___main__":
+    pass
