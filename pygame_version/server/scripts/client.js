@@ -1,34 +1,57 @@
-
 var url = window.location.href;
 url=url.slice(7,-1)
 url = "ws://" + url + "/socketserver";
 
 var socket = new WebSocket(url);
-var waitForUsernameAccept = false;
 
 socket.onopen= function(event)
 {
     renderEnterNickname();
 }
 
-socket.onmessage = function (event) 
+socket.onmessage = function (event)
 {
     message = event.data;
     console.log(message);
-    if (waitForUsernameAccept)
+
+    //messages about usernames
+    if (message=="USERNAME OK")
     {
-        if (message=="OK")
-        {
-            renderChoice();
-        }
-        else if (message=="taken")
-        {
-            alert("Username has already been taken")
-        }
-        else if (message=="not accepting")
-        {
-            alert("Server is not accepting new users")
-        }
+        renderPressToContinute();
+    }
+    else if (message=="USERNAME TAKEN")
+    {
+        alert("Username has already been taken");
+    }
+    else if (message=="USERNAME NOT_ACCEPTING")
+    {
+        alert("Server is not accepting new users");
+    }
+
+    else if (message=="DECISION OK")
+    {
+        renderWaiting();
+    }
+    else if (message=="DECISION NOT_ACCEPTING")
+    {
+        alert("Server is not accepting decisions");
+    }
+
+    else if (message=="RENDER WAITING")
+    {
+        renderWaiting();
+    }
+    else if (message=="RENDER DECISION")
+    {
+        renderDecision();
+    }
+    else if (message=="RENDER ENTER_NICKNAMES")
+    {
+        renderEnterNickname();
+    }
+    else if (message=="RENDER PRESS_TO_CONTINUE")
+    {
+        renderPressToContinute();
     }
 }
 
@@ -77,7 +100,7 @@ function renderEnterNickname()
     document.getElementById('sendUsername_button').addEventListener("click", sendUsername);
 }
 
-function renderChoice()
+function renderDecision()
 {
     document.body.innerHTML=""
 
@@ -113,4 +136,38 @@ function renderChoice()
     document.body.appendChild(goback_button);
 
     document.getElementById('goback_button').addEventListener("click", function(){sendDecision(false);});
+}
+
+function renderWaiting()
+{
+    document.body.innerHTML=""
+
+    var h1 = document.createElement("h1");
+    h1.textContent="Emeralds";
+    document.body.appendChild(h1);
+
+    var waitingP = document.createElement("p")
+    waitingP.id = "waitingParagraph";
+    waitingP.textContent="Relax and look at the screen :)";
+    document.body.appendChild(waitingP);
+}
+
+function renderPressToContinute()
+{
+    document.body.innerHTML=""
+
+    var h1 = document.createElement("h1");
+    h1.textContent="Emeralds";
+    document.body.appendChild(h1);
+
+    var breakln = document.createElement("br")
+    document.body.appendChild(breakln)
+
+    var continue_button = document.createElement("input")
+    continue_button.id = "continue_button";
+    continue_button.type="button";
+    continue_button.value = "Press if everyone is ready";
+    document.body.appendChild(continue_button);
+
+    document.getElementById("continue_button").addEventListener("click", function(){socket.send("continue"); renderWaiting();});
 }

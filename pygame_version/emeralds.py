@@ -1,13 +1,13 @@
 import game_Module
 import renderer_pygame
-import server
+import server_pygame
 
 class Emeralds():
 
     def __init__(self, numOfRounds=5, resolution=(800, 600)):
         self.renderer = renderer_pygame.Renderer(resolution=resolution)
         self.game = game_Module.Game()
-        self.server = server.Server()
+        self.server = server_pygame.Server()
         self.round = 1
         self.numOfRounds = numOfRounds
         #self.renderer.menu()
@@ -18,24 +18,27 @@ class Emeralds():
     def addPlayersToGame(self):
         #add players to a self.game
         self.server.startWaitingForPlayers()
-        self.renderer.startAskPlayersToJoin()
+        self.server.startUpdatingPlayersNicknames()
         while self.server.waitingForPlayers():
-            self.server.temporaryAddPlayers()
             #ask players to join and show players that have already joined
-
-            #temporary
             self.renderer.updatePlayersJoined(self.server.getPlayersNicknames())
-            #mouseClick or something or self.server.continuteToGame()
+
+            self.renderer.renderPlayersJoined()
+
             if self.server.continuteToGame():
                 self.server.stopWaitingForPlayers()
+                
         self.game.addPlayers(self.server.getPlayersNicknames())
-        self.renderer.stopAskPlayersToJoin()
+        self.server.stopUpdatingPlayersNicknames()
 
     def showRules(self):
         #show rules
-        self.renderer.startShowingRules()
-        self.server.waitForPlayersToContinue()
-        self.renderer.stopShowingRules()
+        self.server.startWaitingForPlayers()
+        while self.server.waitingForPlayers():
+            self.renderer.showRules()
+
+            if self.server.continuteToGame():
+                self.server.stopWaitingForPlayers()
 
     def showRoundNum(self):
         self.renderer.showRoundNum(self.round)
@@ -43,23 +46,26 @@ class Emeralds():
     def decisions(self):
         #get players decisions
         playersThatDecide = self.game.getPlayersNamesThatDecide()
-        self.renderer.startWaitingForDecisions(playersThatDecide)
+        print("Players that decide:", playersThatDecide)
+        
+        self.renderer.resetDecisions(playersThatDecide)
         self.server.startWaitingForDecisions(playersThatDecide)
         while self.server.waitingForDecisions():
-            self.renderer.updateAlreadyDoneDecisions(self.server.getDecisions())
+            self.renderer.updateDecisions(self.server.getDecisions())
+            self.renderer.renderWaitingForDecisions()
             if self.server.allDecisionsReady():
                 self.server.stopWaitingForDecisions()
         self.game.setDecisions(self.server.getDecisions())
-        self.renderer.stopWaitingForDecisions()
 
     def goingBack(self):
         if self.game.isAnybodyGoingBack():
             pastReference = self.game.getPlayers() #each player stats
             self.game.goingBack()
             #show effects based on player stats
-            self.renderer.showGoingBack(self.game.getTilePath(), self.game.getPlayers(), pastReference)
+            self.renderer.renderGoingBack(self.game.getTilePath(), self.game.getPlayers(), pastReference)
         else:
-            self.renderer.showNotGoingBack()
+            state = self.game.getPlayers()
+            self.renderer.showNotGoingBack(self.game.getTilePath(), state, state)
 
     def tileReveal(self):
         if self.game.isAnybodyExploring():

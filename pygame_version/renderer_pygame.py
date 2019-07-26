@@ -3,9 +3,11 @@ import time
 import math
 import random
 import threading
+import os
+import sys
 
 import game_Module
-from pprint import pprint
+
 from ctypes import windll
 windll.user32.SetProcessDPIAware()
 
@@ -14,12 +16,12 @@ BASE_TILES_NAMES_GLOBAL = [["base", "base"] for _ in range(6)]
 WIDTH_WHOLE_MAP_GLOBAL = 8
 HEIGHT_WHOLE_MAP_GLOBAL = 6
 RULES_GLOBAL = "Rules:\nRule 1\nRule 2\nRule 3"
-FPS=60
+FPS = 60
 NUM_OF_PLAYER_SKINS = 8
 
 
 class Renderer():
-    def __init__(self, mode=0, resolution=(800, 600), fullscreen=False, fontStyle="Comic Sans MS", fontSize=30, fontColor = (255,255,255)): # mode: 0-load settings from arguments, mode 1 - load from file
+    def __init__(self, mode=0, resolution=(800, 600), fullscreen=False, fontStyle="Comic Sans MS", fontSize=30, fontColor=(255, 255, 255)): # mode: 0-load settings from arguments, mode 1 - load from file
         global BASE_TILES_NAMES_GLOBAL
         global WIDTH_WHOLE_MAP_GLOBAL
         global HEIGHT_WHOLE_MAP_GLOBAL
@@ -28,10 +30,10 @@ class Renderer():
         self.widthWholeMap = WIDTH_WHOLE_MAP_GLOBAL
         self.heightWholeMap = HEIGHT_WHOLE_MAP_GLOBAL
         self.baseTilesNames = BASE_TILES_NAMES_GLOBAL
-        self.tilePath=[]
+        self.tilePath = []
         self.rules = RULES_GLOBAL
-        self.tileMap=[]
-        self.playersInfo={
+        self.tileMap = []
+        self.playersInfo = {
             "playerCount":0,
             "availablePlayerColors":self.playerSurfacesGen(),
             "nicknames":[],
@@ -58,63 +60,63 @@ class Renderer():
         self.fontStyle = fontStyle
         self.myFontColor = fontColor
 
+        basedir = os.path.abspath("")
+        # self.renderingArr = [False, False, False, False] #indexes 0- askPlayersToJoin, 1-showRules, 2-waitForDecisions, 3-showEndOfGameScreen
+        self.textures = {
+            "gem":pygame.image.load(os.path.join(basedir, "Graphics", "Tile_Gem.png")).convert(),
+            "trap":pygame.image.load(os.path.join(basedir, "Graphics", "Tile_Trap.png")).convert(),
+            "relict_Full":pygame.image.load(os.path.join(basedir, "Graphics", "Tile_Relict_Full.png")).convert(),
+            "relict_Empty":pygame.image.load(os.path.join(basedir, "Graphics", "Tile_Relict_Empty.png")).convert(),
+            "jungle":pygame.image.load(os.path.join(basedir, "Graphics", "Tile_Jungle.png")).convert(),
+            "base":pygame.image.load(os.path.join(basedir, "Graphics", "Tile_Base.png")).convert()
 
-        self.renderingArr = [False, False, False, False] #indexes 0- askPlayersToJoin, 1-showRules, 2-waitForDecisions, 3-showEndOfGameScreen
-        self.textures={
-            "gem":pygame.image.load("D:\GIT\Emeralds\Graphics\Tile_Gem.png").convert(),
-            "trap":pygame.image.load("D:\GIT\Emeralds\Graphics\Tile_Trap.png").convert(),
-            "relict_Full":pygame.image.load("D:\GIT\Emeralds\Graphics\Tile_Relict_Full.png").convert(),
-            "relict_Empty":pygame.image.load("D:\GIT\Emeralds\Graphics\Tile_Relict_Empty.png").convert(),
-            "jungle":pygame.image.load("D:\GIT\Emeralds\Graphics\Tile_Jungle.png").convert(),
-            "base":pygame.image.load("D:\GIT\Emeralds\Graphics\Tile_Base.png").convert(),
-
-            "menu_placeholder":pygame.image.load("D:\GIT\Emeralds\Graphics\menu_placeholder.png").convert(),
+            # "menu_placeholder":pygame.image.load("D:\GIT\Emeralds\Graphics\menu_placeholder.png").convert(),
         }
-        self.positions_config={
+        self.positions_config = {
             1:[
-            [0,0,0],
-            [0,1,0],
-            [0,0,0]
+                [0, 0, 0],
+                [0, 1, 0],
+                [0, 0, 0]
             ],
             2:[
-            [1,0,0],
-            [0,0,0],
-            [0,0,1]
+                [1, 0, 0],
+                [0, 0, 0],
+                [0, 0, 1]
             ],
             3:[
-            [1,0,0],
-            [0,1,0],
-            [0,0,1]
+                [1, 0, 0],
+                [0, 1, 0],
+                [0, 0, 1]
             ],
             4:[
-            [1,0,1],
-            [0,0,0],
-            [1,0,1]
+                [1, 0, 1],
+                [0, 0, 0],
+                [1, 0, 1]
             ],
             5:[
-            [1,0,1],
-            [0,1,0],
-            [1,0,1]
+                [1, 0, 1],
+                [0, 1, 0],
+                [1, 0, 1]
             ],
             6:[
-            [1,0,1],
-            [1,0,1],
-            [1,0,1]
+                [1, 0, 1],
+                [1, 0, 1],
+                [1, 0, 1]
             ],
             7:[
-            [1,0,1],
-            [1,1,1],
-            [1,0,1]
+                [1, 0, 1],
+                [1, 1, 1],
+                [1, 0, 1]
             ],
             8:[
-            [1,1,1],
-            [1,0,1],
-            [1,1,1]
+                [1, 1, 1],
+                [1, 0, 1],
+                [1, 1, 1]
             ],
             9:[
-            [1,1,1],
-            [1,1,1],
-            [1,1,1]
+                [1, 1, 1],
+                [1, 1, 1],
+                [1, 1, 1]
             ]
         }
 
@@ -150,7 +152,6 @@ class Renderer():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                quit()
 
     def getTileTexture(self, tileName):
         #final version should be:
@@ -184,40 +185,30 @@ class Renderer():
 
         return surfaces
 
-    def startAskPlayersToJoin(self):
-        self.updatePlayersJoined([])
-        wBannerSurface = self.myFont.render("Waiting for Players", True, (255,255,255))
-        askPlayersToJoinThread = threading.Thread(name="AskPlayersToJoinThread", target=self.askPlayersToJoin, args=(wBannerSurface,))
-        self.renderingArr[0]=True
-        askPlayersToJoinThread.start()
-
-    def askPlayersToJoin(self, waitingBanner):
+    def renderPlayersJoined(self):
+        waitingBanner = self.myFont.render("Waiting for Players", True, (255, 255, 255))
         wBannerPosX = self.calculateCenterX(waitingBanner)
 
         wBannerHeight = waitingBanner.get_height()
 
-        while self.renderingArr[0]:
-            self.displaySurface.fill((0,0,0))
-            self.displaySurface.blit(waitingBanner, (wBannerPosX,0))
+        self.displaySurface.fill((0, 0, 0))
+        self.displaySurface.blit(waitingBanner, (wBannerPosX, 0))
 
-            index = 0
-            for nickname in self.playersInfo["players"]:
-                nicknameSurface = self.playersInfo["players"][nickname]["playerNicknameSurface"]
-                self.displaySurface.blit(nicknameSurface, (0, index*self.myFont.get_height() + wBannerHeight))
-                index+=1
+        index = 0
+        for nickname in self.playersInfo["players"]:
+            nicknameSurface = self.playersInfo["players"][nickname]["playerNicknameSurface"]
+            self.displaySurface.blit(nicknameSurface, (0, index*self.myFont.get_height() + wBannerHeight))
+            index += 1
 
-            self.clock.tick(FPS)
-            self.checkIfPygameExit()
-            self.update()
-
-    def stopAskPlayersToJoin(self):
-        self.renderingArr[0]=False
+        self.clock.tick(FPS)
+        self.checkIfPygameExit()
+        self.update()
 
     def updatePlayersJoined(self, playerNicknames):
         #temporary have to add a way to limit adding players
 
         self.playersInfo["nicknames"]=playerNicknames
-        self.playersInfo["playerCount"]= len(playerNicknames)
+        self.playersInfo["playerCount"] = len(playerNicknames)
 
         for nickname in playerNicknames:
             if nickname not in self.playersInfo["players"]:
@@ -228,29 +219,28 @@ class Renderer():
                 self.playersInfo["players"][nickname]["decides"] = False
                 self.playersInfo["players"][nickname]["playerNicknameSurface"] = self.myFont.render(nickname, True, (self.myFontColor))
                 self.playersInfo["players"][nickname]["playerSurface"]=next(self.playersInfo["availablePlayerColors"])
-
-    def startShowingRules(self):
-        self.renderingArr[1]=True
-        showRulesThread = threading.Thread(name="showRulesThread", target=self.showRules)
-        showRulesThread.start()
+        
+        toDel=set()
+        for key in self.playersInfo["players"]:
+            if key not in playerNicknames:
+                toDel.add(key)
+        for nick in toDel:
+            del self.playersInfo["players"][nick]
 
     def showRules(self):
-        while self.renderingArr[1]:
-            self.clock.tick(FPS)
-            self.checkIfPygameExit()
-            self.update()
-            self.displaySurface.fill((0,0,0))
-            rulesSurfaces = self.getFontSurfacesFromString(self.rules)
+        self.displaySurface.fill((0,0,0))
+        rulesSurfaces = self.getFontSurfacesFromString(self.rules)
 
-            #display banner Rules:
-            bannerHeight = rulesSurfaces[0].get_height()
-            self.displaySurface.blit(rulesSurfaces[0], (self.calculateCenterX(rulesSurfaces.pop(0)), 0))
+        #display banner Rules:
+        bannerHeight = rulesSurfaces[0].get_height()
+        self.displaySurface.blit(rulesSurfaces[0], (self.calculateCenterX(rulesSurfaces.pop(0)), 0))
 
-            for surfaceIndex in range(len(rulesSurfaces)):
-                self.displaySurface.blit(rulesSurfaces[surfaceIndex], (0,bannerHeight + (surfaceIndex)*self.myFont.get_height()))
-
-    def stopShowingRules(self):
-        self.renderingArr[1]=False
+        for surfaceIndex in range(len(rulesSurfaces)):
+            self.displaySurface.blit(rulesSurfaces[surfaceIndex], (0,bannerHeight + (surfaceIndex)*self.myFont.get_height()))
+        
+        self.clock.tick(FPS)
+        self.checkIfPygameExit()
+        self.update()
 
     def showRoundNum(self, roundNum):
         numFont = pygame.font.SysFont("Comic Sans MS", 300)
@@ -279,36 +269,32 @@ class Renderer():
         print("Animation time", time.time() - timeS)
         print("framerate:",framerate)
 
-    def startWaitingForDecisions(self, nicknamesThatMakeDecisions):
-        self.renderingArr[2]=True
+    def resetDecisions(self, nicknamesThatMakeDecisions):
         for nickname in self.playersInfo["players"]:
             if nickname not in nicknamesThatMakeDecisions:
-                self.playersInfo["players"][nickname]["decides"]=False
+                self.playersInfo["players"][nickname]["decides"] = False
             else:
-                self.playersInfo["players"][nickname]["decides"]=True
+                self.playersInfo["players"][nickname]["decides"] = True
 
-        waitingForDecisionsThread = threading.Thread(name="waitForDecisionsThread", target=self.waitForDecisions)
-        waitingForDecisionsThread.start()
+    def renderWaitingForDecisions(self):
+        #temporary should add graphics
+        self.displaySurface.fill((0, 0, 0))
 
-    def waitForDecisions(self):
-        while self.renderingArr[2]:
-            #temporary should add graphics
-            self.displaySurface.fill((0,0,0))
+        nicknamesDeciding = ["Waiting for decisions of:"]
+        for nickname in self.playersInfo["players"]:
+            if self.playersInfo["players"][nickname]["decides"]:
+                nicknamesDeciding.append(nickname)
 
-            nicknamesDeciding=["Waiting for decisions of:"]
-            for nickname in self.playersInfo["players"]:
-                if self.playersInfo["players"][nickname]["decides"]:
-                    nicknamesDeciding.append(nickname)
+        nicknamesSurfaces = self.getFontSurfacesFromString("\n".join(nicknamesDeciding))
 
-            nicknamesSurfaces = self.getFontSurfacesFromString("\n".join(nicknamesDeciding))
+        y=0
+        for surf in nicknamesSurfaces:
+            self.displaySurface.blit(surf,(self.calculateCenterX(surf), y))
+            y+=surf.get_height()
 
-            y=0
-            for surf in nicknamesSurfaces:
-                self.displaySurface.blit(surf,(self.calculateCenterX(surf), y))
-                y+=surf.get_height()
-            self.clock.tick(FPS)
-            self.checkIfPygameExit()
-            self.update()
+        self.clock.tick(FPS)
+        self.checkIfPygameExit()
+        self.update()
 
     def updateDecisions(self, decisionsDict):
         #decisionsDict should be dictionary with "playersNickname":decision pairs
@@ -316,23 +302,44 @@ class Renderer():
             self.playersInfo["players"][nickname]["explores"] = decisionsDict[nickname]
             self.playersInfo["players"][nickname]["decides"] = False
 
-    def stopWaitingForDecisions(self):
-        self.renderingArr[2]=False
 
-    # def showGoingBack(self, tilePath, currentPlayers, pastPlayers):
-    #     global BASE_TILES_NAMES_GLOBAL
-    #     global WIDTH_WHOLE_MAP_GLOBAL
-    #     global HEIGHT_WHOLE_MAP_GLOBAL
-    #     tilePathRenderReady = getTilePathRenderReady(tilePath, BASE_TILES_NAMES_GLOBAL, WIDTH_WHOLE_MAP_GLOBAL, HEIGHT_WHOLE_MAP_GLOBAL)
-    #     tileMapSurface = getTileMapSurface(tilePathRenderReady, (self.displaySurface.get_width() ,self.displaySurface.get_height() - self.myFont.get_height()))
-    #
-    #     while i<190:
-    #         self.displaySurface.fill((0,0,0))
-    #         self.displaySurface.blit(tilePathSurface, (0, self.myFont.get_height()))
-    #         self.update()
+    def renderGoingBack(self, tilePath, currentPlayers, pastPlayers):
+        #temporary llacking animation
+
+        tileMapResolution = (self.displaySurface.get_width(), self.displaySurface.get_height()-self.myFont.get_height())
+        tileMapSurf = self.getTileMapSurface(self.tileMap, resolution = tileMapResolution)
+
+        self.displaySurface.blit(tileMapSurf, (0, self.myFont.get_height()))
+
+        playersThatWentBack=[]
+
+        for playerPast, playerCurr in zip(pastPlayers, currentPlayers):
+            if playerCurr.isInCamp() and playerPast.isInCamp():
+                playersThatWentBack.append(playerCurr)
+            
+        tilePathLength = len(tilePath)
+
+        duration = 3 #in seconds
+        # pygame.time.wait(2000)
+        tStart = time.time()
+        while time.time()-tStart<duration:
+            self.displaySurface.fill((0,0,0))
+            self.displaySurface.blit(tilePathSurface, (0, self.myFont.get_height()))
+            self.update()
+
+            for surfaceIndex in range(len(rulesSurfaces)):
+                self.displaySurface.blit(rulesSurfaces[surfaceIndex], (0,bannerHeight + (surfaceIndex)*self.myFont.get_height()))
+            
+            self.clock.tick(FPS)
+            self.checkIfPygameExit()
+            self.update()
+
+        while i<190:
+            self.displaySurface.fill((0,0,0))
+            self.displaySurface.blit(tilePathSurface, (0, self.myFont.get_height()))
+            self.update()
 
     def showRevealedTile(self, revealedTile):
-        #temporary, the whole module should be based on times rather than fps
         #temporary, final should be:
         #background=pygame.image.load("D:\GIT\Emeralds\Graphics\Tile_Gem.png"
         caveSurf = pygame.Surface((10,10))
@@ -383,7 +390,7 @@ class Renderer():
         # for surface in self.playersNicknamesSurfaces:
         #     widthOfNicknames += surface.get_width()
 
-        #displays the image for 1.5 seconds
+        #displays the image for 1 seconds
         pygame.time.wait(1000)
 
         alpha=255
@@ -588,17 +595,14 @@ if __name__=="__main__":
     renderer=Renderer(resolution=resolution, fullscreen=False)
 
 
-    renderer.updatePlayersJoined([str(i) for i in range(8)])
+    # renderer.updatePlayersJoined([str(i) for i in range(8)])
 
-    deck = game_Module.Deck()
-    tilePathNames = [deck.pickCard().getName() for _ in range(8)]
-    renderer.updateTileMap(tilePathNames)
 
     # test of waiting players to join
-    # renderer.startAskPlayersToJoin()
-    # pygame.time.wait(1000)
+    # renderer.renderPlayersJoined()
+    # pygame.time.wait(10000)
     # renderer.updatePlayersJoined(["Nickname0", "Nickname1", "Nickname2", "Nickname3", "Nickname4"])
-    # pygame.time.wait(1000)
+    # pygame.time.wait(10000)
     # renderer.stopAskPlayersToJoin()
 
     # for i in range(1,6):
@@ -630,7 +634,7 @@ if __name__=="__main__":
     #     renderer.checkIfPygameExit()
     #     renderer.update()
 
-    renderer.showRevealedTile(tilePathNames[-1])
+    # renderer.showRevealedTile(tilePathNames[-1])
 
 
 

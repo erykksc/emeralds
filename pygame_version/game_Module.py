@@ -5,17 +5,19 @@ gemCardValues = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 trapCardNames = ["snakes", "spiders", "lava", "wrecking-ball", "guns"]
 relictCardValues = [3, 5, 7, 9, 11]
 
-#implement in the future
+# implement in the future
+
 
 class Tile():
     def __init__(self, type):
-        self.type=type
+        self.type = type
 
     def getType(self):
         return self.type
 
     def getName(self):
         return self.type
+
 
 class TrapCard(Tile):
     def __init__(self, name):
@@ -25,6 +27,7 @@ class TrapCard(Tile):
     def getName(self):
         return ("trap_" + str(self.name))
 
+
 class GemCard(Tile):
     def __init__(self, amountOfGems):
         Tile.__init__(self, "gem")
@@ -32,10 +35,10 @@ class GemCard(Tile):
         self.gemsLeft = amountOfGems
 
     def resetGems(self):
-        self.gemsLeft=self.amountOfGems
+        self.gemsLeft = self.amountOfGems
 
     def decreaseGemsLeft(self, amount):
-        self.gemsLeft-=amount
+        self.gemsLeft -= amount
 
     def setGemsLeft(self, amount):
         self.gemsLeft = amount
@@ -48,6 +51,7 @@ class GemCard(Tile):
 
     def getAmountOfGems(self):
         return self.amountOfGems
+
 
 class RelictCard(Tile):
     def __init__(self, value):
@@ -73,11 +77,12 @@ class RelictCard(Tile):
     def getValue(self):
         return self.value
 
+
 class Player():
     def __init__(self, nickname):
         self.nickname = nickname
-        self.securedGems = 0 #Gems in chest
-        self.unsecuredGems = 0 #Gems outside the chest
+        self.securedGems = 0  # Gems in chest
+        self.unsecuredGems = 0  # Gems outside the chest
         self.inCamp = True
         self.explores = False
 
@@ -101,11 +106,12 @@ class Player():
         return self.inCamp
 
     def setInCamp(self, value):
-        self.inCamp=value
+        self.inCamp = value
 
     def restartDecision(self):
         self.setInCamp(False)
         self.setExploring(False)
+
 
 class Deck():
     def __init__(self):
@@ -118,10 +124,11 @@ class Deck():
 
         gemCards = [GemCard(amount) for amount in gemCardValues]
         trapCards = [TrapCard(trapName) for trapName in trapCardNames]
-        relictCards = [RelictCard(relictValue) for relictValue in relictCardValues]
+        relictCards = [RelictCard(relictValue)
+                       for relictValue in relictCardValues]
         self.deck = gemCards + 3*trapCards + relictCards
 
-    def pickCard(self): # picks random card from a deck
+    def pickCard(self):  # picks random card from a deck
         return self.deck[random.randint(0, len(self.deck)-1)]
 
     def resetCards(self):
@@ -132,35 +139,37 @@ class Deck():
             if card.type == "relict":
                 card.resetRelict()
 
-    def removeCardFromDeck(self, cardType, value): #returns True if removed sucessfully else returns False
+    # returns True if removed sucessfully else returns False
+    def removeCardFromDeck(self, cardType, value):
         for index in range(len(self.deck)):
             card = self.deck[index]
             if card.type == cardType:
-                if card.type=="trap":
+                if card.type == "trap":
                     if card.name == value:
                         self.deck.pop(index)
                         return True
-                elif card.type=="gem":
-                    if card.amountOfGems==value:
+                elif card.type == "gem":
+                    if card.amountOfGems == value:
                         self.deck.pop(index)
                         return True
-                elif card.type=="relict":
+                elif card.type == "relict":
                     if card.value == value:
                         self.deck.pop(index)
                         return True
         return False
 
+
 class Game:
-    def __init__(self, deck=Deck()): #deck should be Deck() class
+    def __init__(self, deck=Deck()):  # deck should be Deck() class
         self.players = []
         self.gameDeck = deck
         self.roundDeck = self.gameDeck
         self.roundNum = 0
 
-        self.traps=[]
-        self.tilePath=[]
-        self.removedCards= []
-        self.killedBy=None
+        self.traps = []
+        self.tilePath = []
+        self.removedCards = []
+        self.killedBy = None
 
     def addPlayers(self, playersArr):
         players = []
@@ -176,10 +185,10 @@ class Game:
             self.players[index].restartDecision()
 
     def nextRound(self):
-        self.roundNum+=1
+        self.roundNum += 1
         self.resetDecisions()
         self.gameDeck.resetCards()
-        self.traps=[]
+        self.traps = []
         self.tilePath = []
         self.roundDeck = self.gameDeck
 
@@ -194,23 +203,23 @@ class Game:
     def getRoundStats(self):
         "returns a dictionary with round stats"
         tilesRevealed = len(self.tilePath)
-        #discoveredGems : gems that were revealed
+        # discoveredGems : gems that were revealed
         discoveredGems = self.countDiscoveredGems()
-        #gems that people have picked up
+        # gems that people have picked up
         collectedGems = self.countCollectedGems()
-        return {"tilesRevealed":tilesRevealed, "discoveredGems":discoveredGems, "collectedGems":collectedGems}
+        return {"tilesRevealed": tilesRevealed, "discoveredGems": discoveredGems, "collectedGems": collectedGems}
 
     def countDiscoveredGems(self):
         discovered = 0
         for tile in self.tilePath:
-            if tile.type=="gem":
+            if tile.type == "gem":
                 discovered += tile.getAmountOfGems()
         return discovered
 
     def countCollectedGems(self):
-        collected=0
+        collected = 0
         for tile in self.tilePath:
-            if tile.type=="gem":
+            if tile.type == "gem":
                 collected += tile.getAmountOfGems() - tile.getGemsLeft()
         return collected
 
@@ -226,15 +235,17 @@ class Game:
         else:
             return False
 
-    def setDecisions(self, dictOfPlayersDecisions): #dictOfPlayersDecisions {"Nickname1":True, "Nickname2":False}
+    # dictOfPlayersDecisions {"Nickname1":True, "Nickname2":False}
+    def setDecisions(self, dictOfPlayersDecisions):
         for playerKeyName in dictOfPlayersDecisions:
             for index in range(len(self.players)):
                 if self.players[index].nickname == playerKeyName:
-                    self.players[index].setExploring(dictOfPlayersDecisions[playerKeyName])
+                    self.players[index].setExploring(
+                        dictOfPlayersDecisions[playerKeyName])
                     break
 
     def getPlayersNamesThatDecide(self):
-        arr=[]
+        arr = []
         for player in self.players:
             if not player.inCamp:
                 arr.append(player.nickname)
@@ -255,29 +266,34 @@ class Game:
     def goingBack(self):
         if not(self.allPlayersInCamp()):
 
-            #adds players that are going back to IndexesOfPlayersGB
-            IndexesOfPlayersGB = [] #players going back
+            # adds players that are going back to IndexesOfPlayersGB
+            IndexesOfPlayersGB = []  # players going back
 
             for playerIndex in range(len(self.players)):
                 if not self.players[playerIndex].isInCamp():
                     if not self.players[playerIndex].isExploring():
                         IndexesOfPlayersGB.append(playerIndex)
 
-            #Perform actions for people that are going back
-            if len(IndexesOfPlayersGB)>0:
+            # Perform actions for people that are going back
+            if len(IndexesOfPlayersGB) > 0:
 
-                for tileIndex in range(len(self.tilePath)-1, -1, -1): #index is decrementing for the entire path
+                # index is decrementing for the entire path
+                for tileIndex in range(len(self.tilePath)-1, -1, -1):
                     tile = self.tilePath[tileIndex]
 
-                    if tile.type == "gems" and tile.getGemsLeft()>0:
+                    if tile.type == "gems" and tile.getGemsLeft() > 0:
                         for playerIndex in IndexesOfPlayersGB:
-                            self.players[playerIndex].receiveGems(math.floor(tile.getGemsLeft()/len(IndexesOfPlayersGB)))
-                        gemsLeft = self.tilePath[tileIndex].getGemsLeft() % len(IndexesOfPlayersGB)
+                            self.players[playerIndex].receiveGems(
+                                math.floor(tile.getGemsLeft()/len(IndexesOfPlayersGB)))
+                        gemsLeft = self.tilePath[tileIndex].getGemsLeft() % len(
+                            IndexesOfPlayersGB)
                         self.tilePath[tileIndex].setGemsLeft(gemsLeft)
 
-                    elif tile.type == "relict" and len(IndexesOfPlayersGB)==1:
-                        self.players[IndexesOfPlayersGB[0]].receiveGems(tile.getValue())
-                        self.gameDeck.removeCardFromDeck("relict", tile.getValue())
+                    elif tile.type == "relict" and len(IndexesOfPlayersGB) == 1:
+                        self.players[IndexesOfPlayersGB[0]
+                                     ].receiveGems(tile.getValue())
+                        self.gameDeck.removeCardFromDeck(
+                            "relict", tile.getValue())
                         self.tilePath[tileIndex].removeRelict()
 
                 for playerIndex in IndexesOfPlayersGB:
@@ -295,28 +311,31 @@ class Game:
     def resultsOfRevealedTile(self):
         if not(self.allPlayersInCamp()):
             tileRevealed = self.tilePath[-1]
-            playersE = [] #players exploring (indexes)
+            playersE = []  # players exploring (indexes)
             for playerIndex in range(len(self.players)):
                 if not self.players[playerIndex].inCamp:
                     if self.players[playerIndex].explores:
                         playersE.append(playerIndex)
 
-            if tileRevealed.type=="trap":
+            if tileRevealed.type == "trap":
                 self.roundDeck.removeCardFromDeck("trap", tileRevealed.name)
                 self.traps.append(tileRevealed)
 
                 checkTrapsResult = self.checkTraps()
-                if (checkTrapsResult): #check if there are 2 traps of the same kind
+                if (checkTrapsResult):  # check if there are 2 traps of the same kind
                     for playerIndex in playersE:
                         self.players[playerIndex].loseUnsecuredGems()
                         self.players[playerIndex].setInCamp(True)
 
-                    self.gameDeck.removeCardFromDeck("trap", checkTrapsResult.name)
+                    self.gameDeck.removeCardFromDeck(
+                        "trap", checkTrapsResult.name)
 
-            elif tileRevealed.type=="gem":
-                self.roundDeck.removeCardFromDeck("gem", tileRevealed.amountOfGems)
+            elif tileRevealed.type == "gem":
+                self.roundDeck.removeCardFromDeck(
+                    "gem", tileRevealed.amountOfGems)
                 for playerIndex in playersE:
-                    self.players[playerIndex].receiveGems(math.floor(tileRevealed.gemsLeft/len(playersE)))
+                    self.players[playerIndex].receiveGems(
+                        math.floor(tileRevealed.gemsLeft/len(playersE)))
                 gemsLeft = self.tilePath[-1].getGemsLeft() % len(playersE)
                 self.tilePath[-1].setGemsLeft(gemsLeft)
 
@@ -324,8 +343,8 @@ class Game:
                 self.roundDeck.removeCardFromDeck("relict", tileRevealed.value)
 
     def checkTraps(self):
-        #checks if there are two traps of the same type
-        trapsChecked=[]
+        # checks if there are two traps of the same type
+        trapsChecked = []
         for i in range(len(self.traps)):
             if not self.traps[i] in trapsChecked:
                 trapsChecked.append(self.traps[i])
@@ -334,13 +353,14 @@ class Game:
         return False
 
     def getTilePathNames(self):
-        tileMapNames=[]
+        tileMapNames = []
         for tile in self.tilePath:
             tileMap.append(tile.getName())
         return tileMapNames
 
     def getTilePath(self):
         return self.tileMap
+
 
 if __name__ == "__main__":
     pass

@@ -1,16 +1,17 @@
 import pygame
 import time
+import sys
 pygame.init()
 
 displaySurface = pygame.display.set_mode((300, 300))
 pygame.display.set_caption("Learning pygame")
 
-gemSurf= pygame.image.load("D:\GIT\Emeralds\Graphics\Tile_Gem.png")
-gemSurf = gemSurf.convert()
-gemSurf.set_alpha(0)
+# # gemSurf= pygame.image.load("D:\GIT\Emeralds\Graphics\Tile_Gem.png")
+# gemSurf = gemSurf.convert()
+# gemSurf.set_alpha(0)
 
-xPos=0
-yPos=0
+# xPos=0
+# yPos=0
 
 ts=time.time()
 
@@ -43,10 +44,10 @@ while True:
     # for x in range(5):
     displaySurface.blit(textSurface, (0,0))
 
-    if alpha==0:
-        change=1
-    if alpha==255:
-        change=-1
-    textSurface.set_alpha(alpha)
-    alpha+=change
+    # if alpha==0:
+    #     change=1
+    # if alpha==255:
+    #     change=-1
+    # textSurface.set_alpha(alpha)
+    # alpha+=change
     pygame.display.update()

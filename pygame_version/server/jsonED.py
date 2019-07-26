@@ -3,6 +3,7 @@ import time
 
 FILE_NAME = "players_info.json"
 
+
 def write2json(dic):
     with open(FILE_NAME, 'w') as f:
         dic["last_update"] = time.asctime(time.localtime(time.time()))
@@ -22,8 +23,12 @@ def readValue(key):
     return file[key]
 
 def createJson():
-    dic={
-        "last_update" : 0
+    dic = {
+        "last_update" : 0,
+        "ip":"",
+        "port":"",
+        "continue" : False,
+        "players" : {}
     }
-    with open(FILE_NAME, 'w') as f:
-        json.dump(dic, f, indent=4)
+    with open(FILE_NAME, 'w') as file:
+        json.dump(dic, file, indent=4)

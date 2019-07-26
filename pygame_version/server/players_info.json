@@ -1,4 +1,13 @@
 {
-    "last_update": "Tue Jul 23 02:39:25 2019",
-    "6789": false
+    "last_update": "Wed Jul 24 21:25:40 2019",
+    "ip": "localhost",
+    "port": 8888,
+    "continue": true,
+    "players": {
+        "eroar": {
+            "decisions": false,
+            "currentDecision": true,
+            "decision": "false"
+        }
+    }
 }

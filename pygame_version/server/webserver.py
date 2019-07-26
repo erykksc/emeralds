@@ -6,25 +6,24 @@ from tornado.options import define, options
 from tornado.web import Application
 from tornado import websocket
 
-import json
 import os
-import jsonE_D
+import jsonED
 
 
 define('port', default=8888, help='port to listen on')
-define('ip', default="0.0.0.0", help='ip to listen on')
+define('ip', default="localhost", help='ip to listen on')
 define("websocket_max_message_size", default = 128, help="max length in bytes of the socket message")
 
 connections=[]
+usernames={}
 
 accept={
-    "n":True,
-    "d":True
+    "n":False,
+    "d":False
 }
 
 #ADMIN FUNCTIONS
 def send_to_all(message):
-    print(connections)
     for connection in connections:
         connection.write_message(message)
 
@@ -38,52 +37,70 @@ class ClientJsRequestHandler(tornado.web.RequestHandler):
         self.render("static/client.js")
 
 class normalWebSocket(tornado.websocket.WebSocketHandler):
-    usernames={}
 
     def open(self):
-        print("Connection")
+        print(self.request.remote_ip, "Connected")
+
         connections.append(self)
  
     def on_message(self, message):
         '''
         Dictionary for message headers
         n:nickname
-        d:choice
+        d:decision
         '''
         data = message.split(" ")
         if data[0] == "n":
             if accept["n"]:
                 print(self.request.remote_ip, ":", message)
-                if data[1] not in self.usernames.values():
-                    self.usernames[self]=data[1]
-                    info = jsonE_D.readFromJson()
-                    info[data[1]]=False
-                    jsonE_D.write2json(info)
-                    self.write_message("OK")
+                if data[1] not in usernames.values():
+                    usernames[self]=data[1]
+                    info = jsonED.readFromJson()
+                    info["players"][data[1]] = {}
+                    info["players"][data[1]]["decisions"] = False
+                    info["players"][data[1]]["currentDecision"] = False
+                    jsonED.write2json(info)
+                    self.write_message("USERNAME OK")
                 else:
-                    self.write_message("taken")
+                    self.write_message("USERNAME TAKEN")
             else:
-                self.write_message("not accepting")
+                self.write_message("USERNAME NOT_ACCEPTING")
+
         elif data[0]=="d":
             if accept["d"]:
                 print(self.request.remote_ip, ":", message)
-                info = jsonE_D.readFromJson()
-                name = self.usernames[self]
-                info[name]=data[1]
-                jsonE_D.write2json(info)
-                self.write_message("OK")
+                name = usernames[self]
+                info = jsonED.readFromJson()
+                info["players"][name]["decision"] = data[1]
+                info["players"][name]["currentDecision"] = True
+                jsonED.write2json(info)
+                self.write_message("DECISION OK")
             else:
-                self.write_message("server is not accepting usernames at the moment")
+                self.write_message("DECISION NOT_ACCEPTING")
+
+        elif data[0] == "continue":
+            info = jsonED.readFromJson()
+            info["continue"] = True
+            jsonED.write2json(info)
+            print(self.request.remote_ip, ":", message)
+
         else:
-            self.write_message("invalid input")
+            self.write_message("INVALID INPUT")
  
     def on_close(self):
+        print(self.request.remote_ip, "Disconnected")
         connections.remove(self)
         try:
-            del self.usernames[self]
+            info = jsonED.readFromJson()
+            del info["players"][usernames[self]]
+            jsonED.write2json(info)
+
+            del usernames[self]
+
         except KeyError:
             #player didn't enter the nickname and has diconnected
             pass
+
 class adminWebSocket(tornado.websocket.WebSocketHandler):
     def open(self):
         print("Admin connected")
@@ -91,22 +108,51 @@ class adminWebSocket(tornado.websocket.WebSocketHandler):
     def on_message(self, message):
         data = message.split(" ")
         if data[0] == "sendToAll":
-            send_to_all(data[1])
-            print("Sending message from admin: ", data[1])
+            dataToSend = " ".join(data[1:])
+            send_to_all(dataToSend)
+            print("Sending message from admin: ", dataToSend)
             self.write_message("Sending message")
-        if data[0] == "changeAccept":
+        
+        elif data[0] == "sendToUser":
+            for key, value in usernames.items():
+                if value==data[1]:
+                    websocket=key
+                    break
+            dataToSend = " ".join(data[2:])
+            websocket.write_message(dataToSend)
+            self.write_message("Sending message")
+
+        elif data[0] == "changeAccept":
             #example: changeAccept d True
-            accept[data[1]]= True if data[2]==True else False
-            print(bool(data[2]))
+            accept[data[1]]= True if data[2]=="True" else "False"
             print("Changing accept", data[1], "to", data[2])
             self.write_message(str(accept))
+        
+        elif data[0] == "print":
+            if data[1]=="usernames":
+                usernamesStr= " ".join(usernames.values())
+                self.write_message(usernamesStr)
+        
+        elif data[0]=="changeContinue":
+            info = jsonED.readFromJson()
+            info["continue"]=True if data[1]=="True" else False
+            jsonED.write2json(info)
+            self.write_message("Continue changed")
+
+        elif data[0]=="resetDecisions":
+            info = jsonED.readFromJson()
+            for player in info["players"]:
+                info["players"][player]["currentDecision"] = False
+            jsonED.write2json(info)
+            self.write_message("Decisions reset")
+
  
     def on_close(self):
         print("Admin disconnected")
  
 def main():
     """Construct and serve the tornado application."""
-    jsonE_D.createJson()
+    
     basedir = os.path.abspath("")
     handlers=[
         (r"/", IndexRequestHandler),
@@ -116,10 +162,18 @@ def main():
         (r"/socketserver", normalWebSocket),
         (r"/adminwebsocket", adminWebSocket)
     ]
+
+    jsonED.createJson()
+    info = jsonED.readFromJson()
+    info["ip"]=options.ip
+    info["port"]=options.port
+    jsonED.write2json(info)
+
     app = Application(handlers, options.websocket_max_message_size)
     http_server = HTTPServer(app)
     http_server.listen(options.port)
     print('Listening on http://localhost:%i' % options.port)
+
     IOLoop.current().start()
 
 if __name__=="__main__":
