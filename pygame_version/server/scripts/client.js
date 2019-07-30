@@ -53,6 +53,12 @@ socket.onmessage = function (event)
     {
         renderPressToContinute();
     }
+    else if (message.split(" ")[0] == "GEMS")
+    {
+        document.getElementById("gemsInChest").textContent = "Gems in chest: " + String(message.split(" ")[1]);
+        document.getElementById("unsavedGems").textContent = "Unsaved gems: " + String(message.split(" ")[2]);  
+
+    }
 }
 
 

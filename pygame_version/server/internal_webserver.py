@@ -7,7 +7,7 @@ from tornado.web import Application
 from tornado import websocket
 
 import os
-import jsonED
+from server import jsonED
 
 connections=[]
 usernames={}
@@ -160,8 +160,8 @@ class WebServer:
         handlers=[
             (r"/", IndexRequestHandler),
             (r"/client.js", ClientJsRequestHandler),
-            (r"/graphics/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(basedir, "graphics")}),
-            (r"/scripts/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(basedir, "scripts")}),
+            (r"/graphics/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(basedir, "server","graphics")}),
+            (r"/scripts/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(basedir, "server","scripts")}),
             (r"/socketserver", normalWebSocket),
             (r"/adminwebsocket", adminWebSocket)
         ]

@@ -1,23 +1,20 @@
-from websocket import create_connection
-import threading
 import time
 import json
+from websocket import create_connection
 
 def readInfo():
-    try:
-        with open("server/players_info.json") as f:
-            return  json.load(f)
-           
-    except FileNotFoundError:
-        print("No json file found")
-
+    while True:
+        try:
+            with open("server/players_info.json") as f:
+                return  json.load(f)
+        
+        except:
+            time.sleep(0.05)
+            continue
 
 class Server():
     def __init__(self):
         self.waitingForPlayersV = False
-
-        self.nicknames = []
-        self.nicknamesUpdating = False
 
         self.playersThatDecide = []
         self.waitingForDecisionsV = False
@@ -28,24 +25,18 @@ class Server():
         port = str(info["port"])
         url = "ws://"+ip+":"+port+"/adminwebsocket"
         print("Connecting to:", url)
-        self.ws = create_connection(url)
-
-    def startUpdatingPlayersNicknames(self):
-        self.nicknamesUpdating = True
-        updatingThread = threading.Thread(target = self.updatePlayersNicknames)
-        updatingThread.start()
-    
-    def updatePlayersNicknames(self):
-        while self.nicknamesUpdating:
-            info = readInfo()
-            self.nicknames = [nick for nick in info["players"]]
-            time.sleep(0.1)
-    
-    def stopUpdatingPlayersNicknames(self):
-        self.nicknamesUpdating = False
+        connected = False
+        while not connected:
+            try:
+                self.ws = create_connection(url)
+                connected = True
+            except:
+                time.sleep(0.05)
+                continue
 
     def getPlayersNicknames(self):
-        return self.nicknames
+        info = readInfo()            
+        return [nick for nick in info["players"]]
 
     def continuteToGame(self):
         info = readInfo()
@@ -64,12 +55,18 @@ class Server():
         self.ws.send("changeAccept n False")
         self.waitingForPlayersV = False
 
-    def startWaitingForDecisions(self, playersThatDecide):
+    def startWaitingForDecisions(self, playersThatDecide, playersDicts):
         self.playersThatDecide = playersThatDecide
         self.waitingForDecisionsV = True
         self.ws.send("resetDecisions")
         self.ws.send("changeAccept d True")
         self.ws.send("sendToAll RENDER DECISION")
+        for player in playersDicts:
+            str2Send = "sendToUser " + str(player["nickname"]) + " GEMS " + str(player["securedGems"]) + " " + str(player["unsecuredGems"])
+            self.ws.send(str2Send)
+
+
+        #send json file to each player including information how many gems does he have
 
     def waitingForDecisions(self):
         return self.waitingForDecisionsV
@@ -85,7 +82,7 @@ class Server():
 
         for player in info["players"]:
             if info["players"][player]["currentDecision"]:
-                decisions[player] = info["players"][player]["decision"]
+                decisions[player] = True if info["players"][player]["decision"]=="true" else False
 
         return decisions
     

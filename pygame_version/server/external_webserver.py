@@ -1,7 +1,7 @@
 # __init__.py
 import tornado
 from tornado.httpserver import HTTPServer
-from tornado import ioloop
+from tornado.ioloop import IOLoop
 from tornado.options import define, options
 from tornado.web import Application
 from tornado import websocket
@@ -151,7 +151,6 @@ class WebServer:
         define('port', default=8888, help='port to listen on')
         define('ip', default="localhost", help='ip to listen on')
         define("websocket_max_message_size", default = 128, help="max length in bytes of the socket message")
-        self.main()
 
     def main(self):
         """Construct and serve the tornado application."""
@@ -160,8 +159,8 @@ class WebServer:
         handlers=[
             (r"/", IndexRequestHandler),
             (r"/client.js", ClientJsRequestHandler),
-            (r"/graphics/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(basedir, "graphics")}),
-            (r"/scripts/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(basedir, "scripts")}),
+            (r"/graphics/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(basedir, "server","graphics")}),
+            (r"/scripts/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(basedir, "server","scripts")}),
             (r"/socketserver", normalWebSocket),
             (r"/adminwebsocket", adminWebSocket)
         ]
@@ -177,8 +176,8 @@ class WebServer:
         http_server.listen(options.port)
         print(f'Listening on http://{info["ip"]}:{options.port}')
 
-        ioloop = tornado.ioloop.IOLoop.instance()
-        ioloop.start()
+        IOLoop.instance().start()
 
 if __name__=="__main__":
     webserver = WebServer()
+    webserver.main()

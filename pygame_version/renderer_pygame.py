@@ -21,7 +21,7 @@ NUM_OF_PLAYER_SKINS = 8
 
 
 class Renderer():
-    def __init__(self, mode=0, resolution=(800, 600), fullscreen=False, fontStyle="Comic Sans MS", fontSize=30, fontColor=(255, 255, 255)): # mode: 0-load settings from arguments, mode 1 - load from file
+    def __init__(self, resolution=(800, 600), fullscreen=False, fontStyle="Comic Sans MS", fontSize=30, fontColor=(255, 255, 255)):
         global BASE_TILES_NAMES_GLOBAL
         global WIDTH_WHOLE_MAP_GLOBAL
         global HEIGHT_WHOLE_MAP_GLOBAL
@@ -157,26 +157,16 @@ class Renderer():
         #final version should be:
         #return self.textures[tileName]
         #temporary
-        if tileName[:3]=="gem":
+        if tileName[:3] == "gem":
             tileName="gem"
-        elif tileName[:6]=="relict":
-            if tileName[-4:]=="Full":
-                tileName="relict_Full"
+        elif tileName[:6] == "relict":
+            if tileName[-4:] == "Full":
+                tileName = "relict_Full"
             else:
-                tileName="relict_Empty"
-        elif tileName[:4]=="trap":
-            tileName="trap"
+                tileName = "relict_Empty"
+        elif tileName[:4] == "trap":
+            tileName = "trap"
         return self.textures[tileName]
-
-    def updateTileMap(self, tilePath):
-        self.tilePath = tilePath
-        self.tileMap=self.getTileMapFromTilePath(tilePath)
-
-    # def menu(self):
-    #     placeholder = self.myFont,render("Press left mouse button to continue")
-    #     self.displaySurface.fill(0,0,0)
-    #     self.displaySurface.blit(placeholder, (0,0))
-    #     self.update()
 
     def getFontSurfacesFromString(self, text):
         surfaces=[]
@@ -207,18 +197,18 @@ class Renderer():
     def updatePlayersJoined(self, playerNicknames):
         #temporary have to add a way to limit adding players
 
-        self.playersInfo["nicknames"]=playerNicknames
+        self.playersInfo["nicknames"] = playerNicknames
         self.playersInfo["playerCount"] = len(playerNicknames)
 
         for nickname in playerNicknames:
             if nickname not in self.playersInfo["players"]:
                 self.playersInfo["players"][nickname]={}
-                self.playersInfo["players"][nickname]["unsecuredGems"]=0
+                self.playersInfo["players"][nickname]["unsecuredGems"] = 0
                 self.playersInfo["players"][nickname]["inCamp"] = True
                 self.playersInfo["players"][nickname]["explores"] = False
-                self.playersInfo["players"][nickname]["decides"] = False
+                self.playersInfo["players"][nickname]["decides"] = True
                 self.playersInfo["players"][nickname]["playerNicknameSurface"] = self.myFont.render(nickname, True, (self.myFontColor))
-                self.playersInfo["players"][nickname]["playerSurface"]=next(self.playersInfo["availablePlayerColors"])
+                self.playersInfo["players"][nickname]["playerSurface"] = next(self.playersInfo["availablePlayerColors"])
         
         toDel=set()
         for key in self.playersInfo["players"]:
@@ -269,77 +259,129 @@ class Renderer():
         print("Animation time", time.time() - timeS)
         print("framerate:",framerate)
 
-    def resetDecisions(self, nicknamesThatMakeDecisions):
-        for nickname in self.playersInfo["players"]:
-            if nickname not in nicknamesThatMakeDecisions:
-                self.playersInfo["players"][nickname]["decides"] = False
-            else:
-                self.playersInfo["players"][nickname]["decides"] = True
 
-    def renderWaitingForDecisions(self):
+    def renderWaitingForDecisions(self, playersThatDecide, decisionsDict):
+        #decisionsDict should be dictionary with "playersNickname":decision pairs
         #temporary should add graphics
         self.displaySurface.fill((0, 0, 0))
 
         nicknamesDeciding = ["Waiting for decisions of:"]
-        for nickname in self.playersInfo["players"]:
-            if self.playersInfo["players"][nickname]["decides"]:
+        for nickname in playersThatDecide:
+            if nickname not in decisionsDict:
                 nicknamesDeciding.append(nickname)
 
         nicknamesSurfaces = self.getFontSurfacesFromString("\n".join(nicknamesDeciding))
 
         y=0
         for surf in nicknamesSurfaces:
-            self.displaySurface.blit(surf,(self.calculateCenterX(surf), y))
+            self.displaySurface.blit(surf, (self.calculateCenterX(surf), y))
             y+=surf.get_height()
 
         self.clock.tick(FPS)
         self.checkIfPygameExit()
         self.update()
 
-    def updateDecisions(self, decisionsDict):
-        #decisionsDict should be dictionary with "playersNickname":decision pairs
-        for nickname in decisionsDict:
-            self.playersInfo["players"][nickname]["explores"] = decisionsDict[nickname]
-            self.playersInfo["players"][nickname]["decides"] = False
+    # def updateDecisions(self, decisionsDict):
+    #     #decisionsDict should be dictionary with "playersNickname":decision pairs
+    #     for nickname in decisionsDict:
+    #         self.playersInfo["players"][nickname]["explores"] = decisionsDict[nickname]
+    #         self.playersInfo["players"][nickname]["decides"] = False
 
 
     def renderGoingBack(self, tilePath, currentPlayers, pastPlayers):
-        #temporary llacking animation
+        #temporary lacking animation
 
+
+        # check which players returned to base
+        # playersThatWentBack=[]
+        # for playerPast, playerCurr in zip(pastPlayers, currentPlayers):
+        #     if playerCurr["inCamp"] and  not playerPast["inCamp"]:
+        #         playersThatWentBack.append(playerCurr["nickname"])
+        
+
+        tileMap = self.getTileMapFromTilePath(tilePath)
         tileMapResolution = (self.displaySurface.get_width(), self.displaySurface.get_height()-self.myFont.get_height())
-        tileMapSurf = self.getTileMapSurface(self.tileMap, resolution = tileMapResolution)
+        tileMapRects = self.getTileMapRects(tileMapResolution, len(tileMap[0]), len(tileMap))
+        tileMapSurf = self.getTileMapSurface(tileMap, tileMapResolution)
 
+        #distinguishes who is where
+        nicknamesInBase = []
+        nicknamesExploring = []
+        for player in pastPlayers:
+            if player["inCamp"]:
+                nicknamesInBase.append(player["nickname"])
+            elif player["explores"]:
+                nicknamesExploring.append(player["nickname"])
+            else:
+                nicknamesExploring.append(player["nickname"])
+
+        if len(nicknamesInBase) > 0:
+            playersBaseSurf = self.getPlayersTileSurf(tileMapRects[0][0].width, nicknamesInBase)
+        else:
+            playersBaseSurf = None
+
+        if len(nicknamesExploring) > 0:
+            playersExploringSurf = self.getPlayersTileSurf(tileMapRects[0][0].width, nicknamesExploring)
+        else:
+            playersExploringSurf = None
+
+        if len(tilePath) > 0:
+            newestTileX, newestTileY = self.getTileIndexes(0, tilePath, len(tileMap[0]), len(tileMap), 2,2)
+
+
+        self.displaySurface.fill((0, 0, 0))
         self.displaySurface.blit(tileMapSurf, (0, self.myFont.get_height()))
+        if playersBaseSurf:
+            self.displaySurface.blit(playersBaseSurf, tileMapRects[0][0].move(0, self.myFont.get_height()))
+        if playersExploringSurf:
+            self.displaySurface.blit(playersExploringSurf, tileMapRects[newestTileX][newestTileY].move(0, self.myFont.get_height()))
+        self.update()
 
-        playersThatWentBack=[]
-
-        for playerPast, playerCurr in zip(pastPlayers, currentPlayers):
-            if playerCurr.isInCamp() and playerPast.isInCamp():
-                playersThatWentBack.append(playerCurr)
-            
-        tilePathLength = len(tilePath)
-
-        duration = 3 #in seconds
-        # pygame.time.wait(2000)
+        duration = 2 #in seconds
         tStart = time.time()
-        while time.time()-tStart<duration:
-            self.displaySurface.fill((0,0,0))
-            self.displaySurface.blit(tilePathSurface, (0, self.myFont.get_height()))
-            self.update()
-
-            for surfaceIndex in range(len(rulesSurfaces)):
-                self.displaySurface.blit(rulesSurfaces[surfaceIndex], (0,bannerHeight + (surfaceIndex)*self.myFont.get_height()))
-            
+        while time.time() - tStart < duration:
             self.clock.tick(FPS)
             self.checkIfPygameExit()
-            self.update()
 
-        while i<190:
-            self.displaySurface.fill((0,0,0))
-            self.displaySurface.blit(tilePathSurface, (0, self.myFont.get_height()))
-            self.update()
+        nicknamesInBase = []
+        nicknamesExploring = []
+        for player in currentPlayers:
+            if player["inCamp"]:
+                nicknamesInBase.append(player["nickname"])
+            elif player["explores"]:
+                nicknamesExploring.append(player["nickname"])
 
-    def showRevealedTile(self, revealedTile):
+        if len(nicknamesInBase) > 0:
+            playersBaseSurf = self.getPlayersTileSurf(tileMapRects[0][0].width, nicknamesInBase)
+        else:
+            playersBaseSurf = None
+
+        if len(nicknamesExploring) > 0:
+            playersExploringSurf = self.getPlayersTileSurf(tileMapRects[0][0].width, nicknamesExploring)
+        else:
+            playersExploringSurf = None
+
+        if len(tilePath) > 0:
+            newestTileX, newestTileY = self.getTileIndexes(0, tilePath, len(tileMap[0]), len(tileMap), 2, 2)
+
+
+        self.displaySurface.fill((0, 0, 0))
+        self.displaySurface.blit(tileMapSurf, (0, self.myFont.get_height()))
+        if playersBaseSurf:
+            self.displaySurface.blit(playersBaseSurf, tileMapRects[0][0].move(0, self.myFont.get_height()))
+        if playersExploringSurf:
+            self.displaySurface.blit(playersExploringSurf, tileMapRects[newestTileX][newestTileY].move(0, self.myFont.get_height()))
+
+        self.update()
+
+
+        duration = 2
+        tStart = time.time()
+        while time.time() - tStart < duration:
+            self.checkIfPygameExit()
+            self.clock.tick(FPS)
+
+    def showRevealedTile(self, tilePath, playersDicts):
         #temporary, final should be:
         #background=pygame.image.load("D:\GIT\Emeralds\Graphics\Tile_Gem.png"
         caveSurf = pygame.Surface((10,10))
@@ -351,11 +393,7 @@ class Renderer():
 
         caveSurf=pygame.transform.scale(caveSurf, (self.displaySurface.get_size()))
 
-        tileMapResolution = (self.displaySurface.get_width(), self.displaySurface.get_height()-self.myFont.get_height())
-        tileMapSurf = self.getTileMapSurface(self.tileMap, resolution = tileMapResolution)
-        playersSurf = self.getPlayersSurface(tileMapResolution)
-
-        revealedTileSurf = self.getTileTexture(revealedTile)
+        revealedTileSurf = self.getTileTexture(tilePath[-1])
         currentSize = 1
 
         maxTileSize = int(self.displaySurface.get_height()*0.8)
@@ -402,11 +440,25 @@ class Renderer():
         disapearingSurf.blit(caveSurf, (0,0))
         disapearingSurf.blit(currentTileSurf, self.calculateCenter(currentTileSurf))
 
+        tileMapResolution = (self.displaySurface.get_width(), self.displaySurface.get_height()-self.myFont.get_height())
+        tileMap = self.getTileMapFromTilePath(tilePath)
+        tileMapRects = self.getTileMapRects(tileMapResolution, len(tileMap[0]), len(tileMap))
+        tileMapSurf = self.getTileMapSurface(tileMap, resolution = tileMapResolution)
+        playersInBaseSurf = self.getPlayersInBaseTileSurf(tileMapRects[0][0].width, playersDicts)
+        playersExploringSurf = self.getPlayersExploringTileSurf(tileMapRects[0][0].width, playersDicts)
+
+
+        mapSurf = pygame.Surface(tileMapSurf.get_size())
+        mapSurf.blit(tileMapSurf, (0,0))
+        mapSurf.blit(playersInBaseSurf, tileMapRects[0][0])
+        xPos, yPos = self.getTileIndexes(0, tilePath, len(tileMap[0]), len(tileMap), 2, 2)
+        mapSurf.blit(playersExploringSurf, tileMapRects[xPos][yPos])
+
+
         while(alpha>0):
             disapearingSurf.set_alpha(alpha)
             self.displaySurface.blit(tileMapBackground, (0,0))
-            self.displaySurface.blit(tileMapSurf, (0, self.myFont.get_height()))
-            self.displaySurface.blit(playersSurf, (0, self.myFont.get_height()))
+            self.displaySurface.blit(mapSurf, (0, self.myFont.get_height()))
 
             #blit player nicknames
             self.displaySurface.blit(disapearingSurf, (0,0))
@@ -421,6 +473,86 @@ class Renderer():
 
     def update(self):
         pygame.display.update()
+
+    def getPlayersInBaseTileSurf(self, tileSize, playersDicts):
+        nicknamesInBase = []
+        for player in playersDicts:
+            if player["inCamp"]:
+                nicknamesInBase.append(player["nickname"])
+
+        if len(nicknamesInBase) > 0:
+            return self.getPlayersTileSurf(tileSize, nicknamesInBase)
+        else:
+            surf = pygame.Surface((tileSize, tileSize))
+            surf.fill((255,255,255))
+            surf.set_colorkey((255, 255, 255))
+            return surf
+
+    def getPlayersExploringTileSurf(self, tileSize, playersDicts):
+        nicknamesExploring = []
+        for player in playersDicts:
+            if not player["inCamp"]:
+                if player["explores"]:
+                    nicknamesExploring.append(player["nickname"])
+
+        if len(nicknamesExploring) > 0:
+            return self.getPlayersTileSurf(tileSize, nicknamesExploring)
+        else:
+            surf = pygame.Surface((tileSize, tileSize))
+            surf.fill((255,255,255))
+            surf.set_colorkey((255, 255, 255))
+            return surf
+
+    def getTileIndexes(self, indexFromEnd, tilePath, width, height, baseWidth, baseHeight):
+        if len(tilePath) > 0:
+            currIndex = 1
+            lookingFor = len(tilePath) - indexFromEnd
+
+            rowPos = 0
+            colPos = 0
+            for i in range(width*height):
+                if (rowPos < baseHeight) and (colPos < baseWidth):
+                    colPos+=1
+                    continue
+
+                if currIndex == lookingFor:
+                    return (rowPos, colPos)
+                
+                currIndex += 1
+                colPos+=1
+                if colPos>width:
+                    colPos = 0
+                    rowPos += 1
+            raise("index not in tilemap")
+        else:
+            raise("Tile path empty")
+
+    def getTileMapRects(self, resolution, width, height): #, resolution=self.displaySurface.get_size(), width=self.widthWholeMap, height=self.heightWholeMap):
+        #returns a 2d array of rectangles that can be used to create tile map surface
+
+        #calculates the tile Size in order to fit the tile map into resolution
+        if (height >= width) or (width/height<(resolution[0]/resolution[1])): #check if tile map has more tiles in y
+            tileSize=math.floor(resolution[1]/height)
+        else:
+            tileSize=math.floor(resolution[0]/width)
+
+        #calculates the starting position of x and y coordinates (calculates the gaps)
+        xGap = (resolution[0] - tileSize*width)/2
+        yGap = (resolution[1] - tileSize*height)/2
+
+        #array that shall be returned by a function
+        rectArr = [[] for _ in range(width)]
+        #rectangle that will be moved and the copies of it will be created
+        movingRect = pygame.Rect((xGap, yGap), (tileSize, tileSize))
+
+        for x in range(height):
+            for y in range(width):
+                rectArr[x].append(movingRect.copy())
+                movingRect = movingRect.move(tileSize, 0)
+            movingRect = movingRect.move(0, tileSize)
+            movingRect.left = xGap
+
+        return rectArr
 
     def getTileMapFromTilePath(self, tilePath):
         tilePathIndex=0
@@ -458,16 +590,9 @@ class Renderer():
         if resolution=="AUTO":
             resolution = self.displaySurface.get_size()
 
-        #tileSize=math.floor(self.displayRes[0]/self.tilesPerRow) #OG version
-        if (self.heightWholeMap >= self.widthWholeMap) or (self.widthWholeMap/self.heightWholeMap<(resolution[0]/resolution[1])): #check if tile map has more tiles in y
-            tileSize=math.floor(resolution[1]/self.heightWholeMap)
-        else:
-            tileSize=math.floor(resolution[0]/self.widthWholeMap)
-        #calculates the starting position at x and y coordinates
-        xGap = (resolution[0] - tileSize*self.widthWholeMap)/2
-        yGap = (resolution[1] - tileSize*self.heightWholeMap)/2
+        tileMapRects = self.getTileMapRects(resolution, len(tileMap[0]), len(tileMap))
 
-        tileMapSurface = pygame.Surface((resolution))
+        tileMapSurface = pygame.Surface(resolution)
 
         if background=="fill_black":
             tileMapSurface.fill((0,0,0))
@@ -475,97 +600,86 @@ class Renderer():
             resizedBackground = pygame.transform.scale(background, (resolution))
             tileMapSurface.blit(resizedBackground, (0,0))
 
-        xPos = xGap
-        yPos = yGap
-        tileToPlace = pygame.Surface((tileSize, tileSize))
-        for x in range(self.heightWholeMap):
-            for y in range(len(tileMap[x])):
+        tileToPlace = pygame.Surface(tileMapRects[0][0].size)
+        for x in range(len(tileMap)):
+            for y in range(len(tileMap[0])):
                 tileTexture = self.getTileTexture(tileMap[x][y])
-                tileToPlace = pygame.transform.scale(tileTexture, (tileSize, tileSize))
-                tileMapSurface.blit(tileToPlace , (xPos, yPos))
-                xPos += tileSize
-            yPos += tileSize
-            xPos = xGap
+                tileToPlace = pygame.transform.scale(tileTexture, tileMapRects[x][y].size)
+                tileMapSurface.blit(tileToPlace , tileMapRects[x][y])
 
         return tileMapSurface
 
-    def getPlayersSurface(self, resolution):
-        surf = pygame.Surface(resolution)
-        surf.fill((255,255,255))
-        surf.set_colorkey((255, 255, 255))
+    def showEndOfRoundScreen(self, roundStats):
+        displayStr = "Round stats\n" + "tiles revealed: " + str(roundStats["tilesRevealed"]) + "\n"
+        displayStr = displayStr + "discovered gems: " + str(roundStats["discoveredGems"]) + "\n"
+        displayStr = displayStr + "gems collected: " + str(roundStats["collectedGems"])
 
-        baseTileCords = (0,2)
+        textSurfs = self.getFontSurfacesFromString(displayStr)
 
-        playersInBase=[]
-        playersExploring=[]
+        self.displaySurface.fill((0,0,0))
 
-        for nickname in self.playersInfo["players"]:
-            if self.playersInfo["players"][nickname]["inCamp"]:
-                playersInBase.append(nickname)
-            else:
-                playersExploring.append(nickname)
+        #display banner stats:
+        bannerHeight = textSurfs[0].get_height()
+        self.displaySurface.blit(textSurfs[0], (self.calculateCenterX(textSurfs.pop(0)), 0))
 
+        for surfaceIndex in range(len(textSurfs)):
+            self.displaySurface.blit(textSurfs[surfaceIndex], (0,bannerHeight + (surfaceIndex)*self.myFont.get_height()))
+        
+        self.update()
+        self.checkIfPygameExit()
+        self.clock.tick(FPS)
 
-        if (self.heightWholeMap >= self.widthWholeMap) or (self.widthWholeMap/self.heightWholeMap<(resolution[0]/resolution[1])): #check if tile map has more tiles in y
-            tileSize=math.floor(resolution[1]/self.heightWholeMap)
+    def showresultsOfRevealedTile(self, tilePath, playersDicts):
+        tileMap = self.getTileMapFromTilePath(tilePath)
+        tileMapResolution = (self.displaySurface.get_width(), self.displaySurface.get_height()-self.myFont.get_height())
+        tileMapRects = self.getTileMapRects(tileMapResolution, len(tileMap[0]), len(tileMap))
+        tileMapSurf = self.getTileMapSurface(tileMap, tileMapResolution)
+
+        #distinguishes who is where
+        nicknamesInBase=[]
+        nicknamesExploring=[]
+        for player in playersDicts:
+            if player["explores"]:
+                nicknamesExploring.append(player["nickname"])
+            elif player["inCamp"]:
+                nicknamesInBase.append(player["nickname"])
+        
+
+        if len(nicknamesInBase) > 0:
+            playersBaseSurf = self.getPlayersTileSurf(tileMapRects[0][0].width, nicknamesInBase)
         else:
-            tileSize=math.floor(resolution[0]/self.widthWholeMap)
+            playersBaseSurf = None
 
-        playersInBaseSurf = self.getPlayersTileSurf(tileSize, playersInBase)
-        playersExploringSurf = self.getPlayersTileSurf(tileSize, playersExploring)
+        if len(nicknamesExploring) > 0:
+            playersExploringSurf = self.getPlayersTileSurf(tileMapRects[0][0].width, nicknamesExploring)
+        else:
+            playersExploringSurf = None
 
-        #calculates the starting position at x and y coordinates
-        xGap = (resolution[0] - tileSize*self.widthWholeMap)/2
-        yGap = (resolution[1] - tileSize*self.heightWholeMap)/2
-
-        tilePathIndex=0
-        row = 0
-        column = 0
-        columnChange = 1 #direction where the column goes
-
-        xPos=xGap
-        yPos=yGap
-
-        while row < self.heightWholeMap:
-            if (row,column)==baseTileCords:
-                surf.blit(playersInBaseSurf, (xPos, yPos))
-
-            if column >= len(self.baseTilesNames[0]):
-                if tilePathIndex==len(self.tilePath)-1:
-                    surf.blit(playersExploringSurf, (xPos, yPos))
-                tilePathIndex+=1
+        if len(tilePath) > 0:
+            newestTileX, newestTileY = self.getTileIndexes(0, tilePath, len(tileMap[0]), len(tileMap), 2, 2)
 
 
-            column += columnChange
-            xPos += tileSize*columnChange
+        self.displaySurface.fill((0, 0, 0))
+        self.displaySurface.blit(tileMapSurf, (0, self.myFont.get_height()))
+        if playersBaseSurf:
+            self.displaySurface.blit(playersBaseSurf, tileMapRects[0][0].move(0, self.myFont.get_height()))
+        if playersExploringSurf:
+            self.displaySurface.blit(playersExploringSurf, tileMapRects[newestTileX][newestTileY].move(0, self.myFont.get_height()))
 
-            if column>self.widthWholeMap-1:
-                row+=1
-                columnChange = -columnChange
-                column += columnChange
-                yPos+=tileSize
-                xPos += tileSize*columnChange
-
-            if column<0:
-                row+=1
-                columnChange = -columnChange
-                column += columnChange
-                yPos+=tileSize
-                xPos += tileSize*columnChange
-
-        return surf
+        self.update()
+        self.checkIfPygameExit()
+        self.clock.tick(FPS)
 
     def getPlayersTileSurf(self, tileSize, nicknames):
         surf = pygame.Surface((tileSize,tileSize))
         surf.fill((255,255,255))
         surf.set_colorkey((255,255,255))
-        if len(nicknames):
+        if len(nicknames) > 0:
             config = self.positions_config[len(nicknames)]
 
             nicknamesIndex = 0
             row=0
             multiPl = [0.25, 0.5, 0.75]
-
 
             while row<3:
                 column=0
@@ -595,7 +709,7 @@ if __name__=="__main__":
     renderer=Renderer(resolution=resolution, fullscreen=False)
 
 
-    # renderer.updatePlayersJoined([str(i) for i in range(8)])
+    # renderer.updatePlayersJoined([str(i) for i in range(9)])
 
 
     # test of waiting players to join
@@ -617,15 +731,18 @@ if __name__=="__main__":
     # pygame.time.wait(10)
     # renderer.stopWaitingForDecisions()
 
-    # test of showRevealedTile
+    # test of blitting players 
     # for i in range(5):
     #     renderer.playersInfo["players"][str(i)]["inCamp"]=True
-    #
     # players=[]
     # z=0
     # while 1 :
-    #     players.append(str(z))
-    #     z+=1
+    #     if z==9:
+    #         z=0
+    #         players=[]
+    #     else:
+    #         players.append(str(z))
+    #         z+=1
     #     renderer.clock.tick(2)
     #     surf = pygame.Surface((500,500))
     #     surf.fill((128,128,0))
@@ -634,7 +751,14 @@ if __name__=="__main__":
     #     renderer.checkIfPygameExit()
     #     renderer.update()
 
-    # renderer.showRevealedTile(tilePathNames[-1])
+    # test of showRevealedTile
+    import game_Module
+    game = game_Module.Game()
+    nicknames = ["player1", "player2"]
+    game.addPlayers(nicknames)
+    renderer.updatePlayersJoined(nicknames)
+    game.revealTile()
+    renderer.showRevealedTile(game.getTilePathNames(), game.getPlayers())
 
 
 

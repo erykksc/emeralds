@@ -85,6 +85,7 @@ class Player():
         self.unsecuredGems = 0  # Gems outside the chest
         self.inCamp = True
         self.explores = False
+        self.decides = True
 
     def secureGems(self):
         self.securedGems += self.unsecuredGems
@@ -109,9 +110,21 @@ class Player():
         self.inCamp = value
 
     def restartDecision(self):
-        self.setInCamp(False)
+        self.setInCamp(True)
         self.setExploring(False)
-
+        self.decides = True
+    
+    def getNickname(self):
+        return self.nickname
+    
+    def getDictionary(self):
+        d={}
+        d["nickname"] = self.nickname
+        d["inCamp"] = self.inCamp
+        d["explores"] = self.explores
+        d["unsecuredGems"] = self.unsecuredGems
+        d["securedGems"] = self.securedGems
+        return d
 
 class Deck():
     def __init__(self):
@@ -178,11 +191,10 @@ class Game:
         self.players = players
 
     def getPlayers(self):
-        return self.players
-
-    def restartDecisions(self):
-        for index in range(len(self.players)):
-            self.players[index].restartDecision()
+        rArr = [] #return dictionary
+        for player in self.players:
+            rArr.append(player.getDictionary())
+        return rArr
 
     def nextRound(self):
         self.roundNum += 1
@@ -193,21 +205,20 @@ class Game:
         self.roundDeck = self.gameDeck
 
     def resetDecisions(self):
-        for i in range(len(self.players)):
-            self.players[i].setInCamp(False)
-            self.players[i].setExploring(False)
+        for index in range(len(self.players)):
+            self.players[index].restartDecision()
 
     def getRoundNum(self):
         return self.roundNum
 
     def getRoundStats(self):
         "returns a dictionary with round stats"
-        tilesRevealed = len(self.tilePath)
-        # discoveredGems : gems that were revealed
-        discoveredGems = self.countDiscoveredGems()
-        # gems that people have picked up
-        collectedGems = self.countCollectedGems()
-        return {"tilesRevealed": tilesRevealed, "discoveredGems": discoveredGems, "collectedGems": collectedGems}
+        stats = {
+            "tilesRevealed": len(self.tilePath), 
+            "discoveredGems": self.countDiscoveredGems(),
+             "collectedGems": self.countCollectedGems()
+            }
+        return stats
 
     def countDiscoveredGems(self):
         discovered = 0
@@ -229,8 +240,14 @@ class Game:
                 return False
         return True
 
+    def allPlayersNotDeciding(self):
+        for player in self.players:
+            if player.decides:
+                return False
+        return True
+
     def isEndOfRound(self):
-        if self.allPlayersInCamp():
+        if self.allPlayersInCamp() and self.allPlayersNotDeciding():
             return True
         else:
             return False
@@ -247,7 +264,7 @@ class Game:
     def getPlayersNamesThatDecide(self):
         arr = []
         for player in self.players:
-            if not player.inCamp:
+            if player.decides:
                 arr.append(player.nickname)
         return arr
 
@@ -259,18 +276,18 @@ class Game:
 
     def isAnybodyExploring(self):
         for player in self.players:
-            if not player.isInCamp() and player.isExploring():
+            if player.decides and player.isExploring():
                 return True
         return False
 
     def goingBack(self):
-        if not(self.allPlayersInCamp()):
+        if not self.allPlayersNotDeciding():
 
             # adds players that are going back to IndexesOfPlayersGB
             IndexesOfPlayersGB = []  # players going back
 
             for playerIndex in range(len(self.players)):
-                if not self.players[playerIndex].isInCamp():
+                if self.players[playerIndex].decides:
                     if not self.players[playerIndex].isExploring():
                         IndexesOfPlayersGB.append(playerIndex)
 
@@ -299,23 +316,24 @@ class Game:
                 for playerIndex in IndexesOfPlayersGB:
                     self.players[playerIndex].secureGems()
                     self.players[playerIndex].setInCamp(True)
+                    self.players[playerIndex].decides = False
 
-    def tileReveal(self):
-        if not(self.allPlayersInCamp()):
-            tileRevealed = self.roundDeck.pickCard()
-            self.tilePath.append(tileRevealed)
+    def revealTile(self):
+        tileRevealed = self.roundDeck.pickCard()
+        self.tilePath.append(tileRevealed)
 
     def getRevealedTile(self):
         return self.tilePath[-1].getName()
 
     def resultsOfRevealedTile(self):
-        if not(self.allPlayersInCamp()):
+        if not self.allPlayersNotDeciding():
             tileRevealed = self.tilePath[-1]
             playersE = []  # players exploring (indexes)
             for playerIndex in range(len(self.players)):
-                if not self.players[playerIndex].inCamp:
+                if self.players[playerIndex].decides:
                     if self.players[playerIndex].explores:
                         playersE.append(playerIndex)
+                        self.players[playerIndex].setInCamp(False)
 
             if tileRevealed.type == "trap":
                 self.roundDeck.removeCardFromDeck("trap", tileRevealed.name)
@@ -326,6 +344,7 @@ class Game:
                     for playerIndex in playersE:
                         self.players[playerIndex].loseUnsecuredGems()
                         self.players[playerIndex].setInCamp(True)
+                        self.players[playerIndex].decides = False
 
                     self.gameDeck.removeCardFromDeck(
                         "trap", checkTrapsResult.name)
@@ -355,12 +374,28 @@ class Game:
     def getTilePathNames(self):
         tileMapNames = []
         for tile in self.tilePath:
-            tileMap.append(tile.getName())
+            tileMapNames.append(tile.getName())
         return tileMapNames
 
     def getTilePath(self):
-        return self.tileMap
+        return self.tilePath
 
 
 if __name__ == "__main__":
-    pass
+    deck = Deck()
+    game = Game(deck)
+    game.addPlayers(["player1", "player2"])
+    print(game.getPlayersNamesThatDecide())
+    decisions = {
+        "player1":True,
+        "player2":False
+    }
+    game.nextRound()
+    game.setDecisions(decisions)
+    for i in range(10):
+        game.goingBack()
+        game.revealTile()
+        game.resultsOfRevealedTile()
+    
+    print(game.getPlayers())
+
