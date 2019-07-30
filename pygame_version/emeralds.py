@@ -1,15 +1,10 @@
 import game_Module
 import renderer_pygame
 import server_pygame
-from server import webserver
-import threading
 
 class Emeralds():
 
     def __init__(self, numOfRounds=5, resolution=(800, 600)):
-        # self.webserver = webserver.WebServer()
-        self.webserverThread = threading.Thread(target=self.webserverFunc, name="webserverThread")
-        self.webserverThread.start()
         self.server = server_pygame.Server()
         self.game = game_Module.Game()
         self.renderer = renderer_pygame.Renderer(resolution=resolution)
@@ -21,7 +16,7 @@ class Emeralds():
         self.playGame()
     
     def webserverFunc(self):
-        server = webserver.WebServer()
+        server = internal_webserver.WebServer()
         server.main()
 
     def addPlayersToGame(self):

@@ -1,19 +1,31 @@
 import time
 import json
 from websocket import create_connection
+import threading
+import asyncio
+from server import internal_webserver
 
 def readInfo():
     while True:
         try:
-            with open("server/players_info.json") as f:
+            with open("players_info.json") as f:
                 return  json.load(f)
         
         except:
             time.sleep(0.05)
             continue
 
+def start_server(webserver):
+    asyncio.set_event_loop(asyncio.new_event_loop())
+    webserver.run()
+
 class Server():
     def __init__(self):
+        webserver = internal_webserver.WebServer()
+        webserverThread = threading.Thread(target = start_server, args=(webserver,))
+        webserverThread.daemon = True
+        webserverThread.start()
+
         self.waitingForPlayersV = False
 
         self.playersThatDecide = []
@@ -33,6 +45,12 @@ class Server():
             except:
                 time.sleep(0.05)
                 continue
+    
+    def runTornado(self):
+        TWebServer = internal_webserver.WebServer()
+        app = TWebServer.getApp()
+        app.listen(8888)
+        ioloop.start()
 
     def getPlayersNicknames(self):
         info = readInfo()            

@@ -1,13 +1,13 @@
 # __init__.py
 import tornado
 from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
+from tornado import ioloop
 from tornado.options import define, options
-from tornado.web import Application
+import tornado.web
 from tornado import websocket
 
 import os
-import jsonED
+from server import jsonED
 
 connections=[]
 usernames={}
@@ -146,15 +146,8 @@ class adminWebSocket(tornado.websocket.WebSocketHandler):
         print("Admin disconnected")
 
 
-class WebServer:
+class WebServer(tornado.web.Application):
     def __init__(self):
-        define('port', default=8888, help='port to listen on')
-        define('ip', default="localhost", help='ip to listen on')
-        define("websocket_max_message_size", default = 128, help="max length in bytes of the socket message")
-
-    def main(self):
-        """Construct and serve the tornado application."""
-        
         basedir = os.path.abspath("")
         handlers=[
             (r"/", IndexRequestHandler),
@@ -165,19 +158,22 @@ class WebServer:
             (r"/adminwebsocket", adminWebSocket)
         ]
 
+        define('port', default=8888, help='port to listen on')
+        define('ip', default="localhost", help='ip to listen on')
+        define("websocket_max_message_size", default = 128, help="max length in bytes of the socket message")
+
         jsonED.createJson()
         info = jsonED.readFromJson()
         info["ip"] = options.ip
         info["port"] = options.port
         jsonED.write2json(info)
 
-        app = Application(handlers, options.websocket_max_message_size)
-        http_server = HTTPServer(app)
-        http_server.listen(options.port)
-        print(f'Listening on http://{info["ip"]}:{options.port}')
+        super().__init__(handlers, options.websocket_max_message_size)
 
-        IOLoop.instance().start()
+    def run(self, port=8888):
+        self.listen(port)
+        tornado.ioloop.IOLoop.instance().start()
 
 if __name__=="__main__":
     webserver = WebServer()
-    webserver.main()
+    
