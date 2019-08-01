@@ -33,9 +33,9 @@ class Server():
 
         info = readInfo()
 
-        ip = str(info["ip"])
-        port = str(info["port"])
-        url = "ws://"+ip+":"+port+"/adminwebsocket"
+        self.ip = str(info["ip"])
+        self.port = str(info["port"])
+        url = "ws://" + self.ip + ":" + self.port + "/adminwebsocket"
         print("Connecting to:", url)
         connected = False
         while not connected:
@@ -46,12 +46,12 @@ class Server():
                 time.sleep(0.05)
                 continue
     
-    def runTornado(self):
-        TWebServer = internal_webserver.WebServer()
-        app = TWebServer.getApp()
-        app.listen(8888)
-        ioloop.start()
-
+    def getIp(self):
+        return self.ip
+    
+    def getPort(self):
+        return self.port
+    
     def getPlayersNicknames(self):
         info = readInfo()            
         return [nick for nick in info["players"]]
@@ -65,13 +65,17 @@ class Server():
         self.ws.send("sendToAll RENDER PRESS_TO_CONTINUE")
         self.ws.send("changeContinue False")
         self.waitingForPlayersV = True
+        time.sleep(0.2)
+    
+    def askPlayersForNicknames(self):
+        self.ws.send("sendToAll RENDER ENTER_NICKNAMES")
 
     def waitingForPlayers(self):
         return self.waitingForPlayersV
 
     def stopWaitingForPlayers(self):
-        self.ws.send("changeAccept n False")
         self.waitingForPlayersV = False
+        self.ws.send("changeAccept n False")
 
     def startWaitingForDecisions(self, playersThatDecide, playersDicts):
         self.playersThatDecide = playersThatDecide
@@ -82,6 +86,7 @@ class Server():
         for player in playersDicts:
             str2Send = "sendToUser " + str(player["nickname"]) + " GEMS " + str(player["securedGems"]) + " " + str(player["unsecuredGems"])
             self.ws.send(str2Send)
+        time.sleep(0.2)
 
 
         #send json file to each player including information how many gems does he have

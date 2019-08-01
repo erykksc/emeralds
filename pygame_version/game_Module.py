@@ -1,16 +1,17 @@
 import random
 import math
+import copy
 
 gemCardValues = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
-trapCardNames = ["snakes", "spiders", "lava", "wrecking-ball", "guns"]
+trapCardNames = ["snakes", "spiders", "lava", "wreckingball", "guns"]
 relictCardValues = [3, 5, 7, 9, 11]
 
 # implement in the future
 
 
 class Tile():
-    def __init__(self, type):
-        self.type = type
+    def __init__(self, tileType):
+        self.type = tileType
 
     def getType(self):
         return self.type
@@ -61,9 +62,9 @@ class RelictCard(Tile):
 
     def getName(self):
         if self.containsRelictV:
-            return ("relict_" + str(self.value) + "_Full")
+            return ("relict_" + str(self.value) + "_full")
         else:
-            return ("relict_" + str(self.value) + "_Empty")
+            return ("relict_" + str(self.value) + "_empty")
 
     def removeRelict(self):
         self.containsRelictV = False
@@ -137,20 +138,22 @@ class Deck():
 
         gemCards = [GemCard(amount) for amount in gemCardValues]
         trapCards = [TrapCard(trapName) for trapName in trapCardNames]
-        relictCards = [RelictCard(relictValue)
-                       for relictValue in relictCardValues]
+        relictCards = [RelictCard(relictValue) for relictValue in relictCardValues]
         self.deck = gemCards + 3*trapCards + relictCards
 
     def pickCard(self):  # picks random card from a deck
         return self.deck[random.randint(0, len(self.deck)-1)]
+    
+    def copy(self):
+        return copy.deepcopy(self)
 
     def resetCards(self):
         for index in range(len(self.deck)):
             card = self.deck[index]
             if card.type == "gem":
-                card.resetGems()
+                self.deck[index].resetGems()
             if card.type == "relict":
-                card.resetRelict()
+                self.deck[index].resetRelict()
 
     # returns True if removed sucessfully else returns False
     def removeCardFromDeck(self, cardType, value):
@@ -176,7 +179,7 @@ class Game:
     def __init__(self, deck=Deck()):  # deck should be Deck() class
         self.players = []
         self.gameDeck = deck
-        self.roundDeck = self.gameDeck
+        self.roundDeck = self.gameDeck.copy()
         self.roundNum = 0
 
         self.traps = []
@@ -202,7 +205,8 @@ class Game:
         self.gameDeck.resetCards()
         self.traps = []
         self.tilePath = []
-        self.roundDeck = self.gameDeck
+        self.roundDeck = self.gameDeck.copy()
+        print("game deck len", len(self.gameDeck.deck))
 
     def resetDecisions(self):
         for index in range(len(self.players)):
@@ -212,13 +216,35 @@ class Game:
         return self.roundNum
 
     def getRoundStats(self):
-        "returns a dictionary with round stats"
+        """returns a dictionary with round stats"""
         stats = {
             "tilesRevealed": len(self.tilePath), 
             "discoveredGems": self.countDiscoveredGems(),
              "collectedGems": self.countCollectedGems()
             }
         return stats
+
+    def getGameStats(self):
+        #temporary
+        stats = {
+            "winners": self.getWinners,
+            "tilesRevealed": "Not yet implemented", 
+            "discoveredGems": "Not yet implemented",
+             "collectedGems": "Not yet implemented"
+            }
+        return stats
+
+    def getWinners(self):
+        most = 0
+        winners = []
+        for player in self.players:
+            if player.securedGems >most:
+                most = player.securedGems
+        
+        for player in self.players:
+            if player.securedGems == most:
+                winners.append(player.nickname)
+        return winners
 
     def countDiscoveredGems(self):
         discovered = 0
@@ -307,10 +333,8 @@ class Game:
                         self.tilePath[tileIndex].setGemsLeft(gemsLeft)
 
                     elif tile.type == "relict" and len(IndexesOfPlayersGB) == 1:
-                        self.players[IndexesOfPlayersGB[0]
-                                     ].receiveGems(tile.getValue())
-                        self.gameDeck.removeCardFromDeck(
-                            "relict", tile.getValue())
+                        self.players[IndexesOfPlayersGB[0]].receiveGems(tile.getValue())
+                        self.gameDeck.removeCardFromDeck("relict", tile.getValue())
                         self.tilePath[tileIndex].removeRelict()
 
                 for playerIndex in IndexesOfPlayersGB:
@@ -346,12 +370,10 @@ class Game:
                         self.players[playerIndex].setInCamp(True)
                         self.players[playerIndex].decides = False
 
-                    self.gameDeck.removeCardFromDeck(
-                        "trap", checkTrapsResult.name)
+                    self.gameDeck.removeCardFromDeck("trap", checkTrapsResult.name)
 
             elif tileRevealed.type == "gem":
-                self.roundDeck.removeCardFromDeck(
-                    "gem", tileRevealed.amountOfGems)
+                self.roundDeck.removeCardFromDeck("gem", tileRevealed.amountOfGems)
                 for playerIndex in playersE:
                     self.players[playerIndex].receiveGems(
                         math.floor(tileRevealed.gemsLeft/len(playersE)))
@@ -395,7 +417,11 @@ if __name__ == "__main__":
     for i in range(10):
         game.goingBack()
         game.revealTile()
+        print("rcopyevealed tile:", game.tilePath[-1].getName())
         game.resultsOfRevealedTile()
     
-    print(game.getPlayers())
+    print(game.gameDeck)
+    game.nextRound()
+    print(game.gameDeck)
+    # print(game.getPlayers())
 

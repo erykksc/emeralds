@@ -1,12 +1,12 @@
 # __init__.py
 import tornado
 from tornado.httpserver import HTTPServer
-from tornado import ioloop
 from tornado.options import define, options
 import tornado.web
 from tornado import websocket
 
 import os
+import socket
 from server import jsonED
 
 connections=[]
@@ -23,9 +23,9 @@ def send_to_all(message):
         connection.write_message(message)
 
 class IndexRequestHandler(tornado.web.RequestHandler):
-        def get(self):
-            self.set_status(200)
-            self.render("static/index.html")
+    def get(self):
+        self.set_status(200)
+        self.render("static/index.html")
 
 class ClientJsRequestHandler(tornado.web.RequestHandler):
     def get(self):
@@ -164,7 +164,7 @@ class WebServer(tornado.web.Application):
 
         jsonED.createJson()
         info = jsonED.readFromJson()
-        info["ip"] = options.ip
+        info["ip"] = socket.gethostbyname(socket.gethostname())
         info["port"] = options.port
         jsonED.write2json(info)
 

@@ -3,51 +3,42 @@ import time
 import sys
 pygame.init()
 
-displaySurface = pygame.display.set_mode((300, 300))
+displaySurface = pygame.display.set_mode((600, 600))
 pygame.display.set_caption("Learning pygame")
-
-# # gemSurf= pygame.image.load("D:\GIT\Emeralds\Graphics\Tile_Gem.png")
-# gemSurf = gemSurf.convert()
-# gemSurf.set_alpha(0)
-
-# xPos=0
-# yPos=0
 
 ts=time.time()
 
 clock = pygame.time.Clock()
 
-myfont=pygame.font.SysFont("Comic Sans MS", 40)
-textSurface = myfont.render("1", True, (255,255,255),(0,0,0,0))
-height = textSurface.get_height()
+def getOnlyLetters(text, maxHeight):
+    tStart = time.time()
+    size = maxHeight
+    myfont=pygame.font.SysFont("Comic Sans MS", size)
 
+    while myfont.get_ascent() > maxHeight:
+        size -= myfont.get_ascent() - maxHeight
+        myfont=pygame.font.SysFont("Comic Sans MS", size)
+    textSurf = myfont.render(text, True, (0,255,0), (0,0,255))
+    rSurface = pygame.Surface((myfont.size(text)[0], myfont.get_ascent()))
+    rSurface.blit(textSurf, (0,0))
+    tStop = time.time()
+    print("Time needed for calculation:", tStop-tStart)
+    return rSurface
 
-alpha=255
-change = -1
 
 while True:
     clock.tick(60)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
-            sys.exit()
+            quit()
     displaySurface.fill((0,0,0))
-    #
-    # xPos+=20
-    # if xPos>280:
-    #     xPos=0
-    #     yPos+=20
-    # if yPos>280:
-    #     yPos=0
+    numSurf = getOnlyLetters("1", round(600*0.75))
+    roundSurf = getOnlyLetters("round", round(600*0.15))
 
-    # pygame.draw.rect(displaySurface, (0,255,0), (xPos, yPos, 20, 20))
-    # for x in range(5):
-    displaySurface.blit(textSurface, (0,0))
 
-    # if alpha==0:
-    #     change=1
-    # if alpha==255:
-    #     change=-1
-    # textSurface.set_alpha(alpha)
-    # alpha+=change
+    displaySurface.blit(numSurf, (0, 0))
+    displaySurface.blit(roundSurf, (0, numSurf.get_height()))
+
+
     pygame.display.update()

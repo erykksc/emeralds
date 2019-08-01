@@ -4,29 +4,31 @@ import server_pygame
 
 class Emeralds():
 
-    def __init__(self, numOfRounds=5, resolution=(800, 600)):
+    def __init__(self, numOfRounds=5, resolution=(800, 600), fullscreen=False, graphics="default"):
         self.server = server_pygame.Server()
+        self.gameIP = self.server.getIp() 
+        self.gamePort = self.server.getPort()
         self.game = game_Module.Game()
-        self.renderer = renderer_pygame.Renderer(resolution=resolution)
+        self.renderer = renderer_pygame.Renderer(resolution=resolution, fullscreen=fullscreen, graphics=graphics)
         self.round = 1
         self.numOfRounds = numOfRounds
-        #self.renderer.menu()
         #temporary
+        #self.renderer.menu()
+        
+    
+    def main(self):
         self.addPlayersToGame()
         self.playGame()
-    
-    def webserverFunc(self):
-        server = internal_webserver.WebServer()
-        server.main()
 
     def addPlayersToGame(self):
         #add players to a self.game
         self.server.startWaitingForPlayers()
+        self.server.askPlayersForNicknames()
         while self.server.waitingForPlayers():
             #ask players to join and show players that have already joined
             self.renderer.updatePlayersJoined(self.server.getPlayersNicknames())
 
-            self.renderer.renderPlayersJoined()
+            self.renderer.renderPlayersJoined(self.gameIP, self.gamePort)
 
             if self.server.continuteToGame():
                 self.server.stopWaitingForPlayers()
@@ -112,8 +114,13 @@ class Emeralds():
             while not self.game.isEndOfRound():
                 self.playShortRound()
             self.round += 1
-        self.renderer.showEndOfGameScreen(self.game.getStats()) #wait for pc mouse
+        self.server.startWaitingForPlayers()
+        while self.server.waitingForPlayers():
+            self.renderer.showEndOfGameScreen(self.game.getGameStats())
+            if self.server.continuteToGame():
+                self.server.stopWaitingForPlayers()
         # self.renderer.menu()
 
-if __name__=="__main__":
-    emeralds=Emeralds()
+if __name__ == "__main__":
+    emeralds = Emeralds(resolution=(1920, 1080), fullscreen=True, graphics="pola")
+    emeralds.main()
