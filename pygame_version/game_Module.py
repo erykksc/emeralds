@@ -206,7 +206,6 @@ class Game:
         self.traps = []
         self.tilePath = []
         self.roundDeck = self.gameDeck.copy()
-        print("game deck len", len(self.gameDeck.deck))
 
     def resetDecisions(self):
         for index in range(len(self.players)):

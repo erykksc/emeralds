@@ -1,9 +1,9 @@
 {
     "resolution": [
-        1920,
-        1080
+        800,
+        600
     ],
-    "fullscreen": true,
+    "fullscreen": false,
     "num_of_rounds": 5,
     "texture_pack": "pola"
 }

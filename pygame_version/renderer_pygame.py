@@ -43,13 +43,13 @@ class Renderer():
             "availablePlayerColors":self.playerSurfacesGen(),
             "nicknames":[],
             "players":{
-            # "nickname1":{
-            #     "playerNicknameSurface": nickname surface made with a font module
-            #     "playerSurface": playerSurface taken from playerSurfaces,
-            #     "unsecuredGems":0,
-            #     "inCamp":True,
-            #     "explores":False
-            # }
+                # "nickname1":{
+                # "playerNicknameSurface": nickname surface made with a font module
+                # "playerSurface": playerSurface taken from playerSurfaces,
+                # "unsecuredGems":0,
+                # "inCamp":True,
+                # "explores":False
+                # }
             }
         }
 
@@ -73,7 +73,6 @@ class Renderer():
                 "jungle":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tile_Jungle.png")).convert(),
                 "base":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tile_Base.png")).convert(),
                 "trap":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tile_Trap.png")).convert()
-
                 # "menu_placeholder":pygame.image.load("D:\GIT\Emeralds\Graphics\menu_placeholder.png").convert(),
             }
         elif self.graphics == "pola":
@@ -91,14 +90,12 @@ class Renderer():
 
                 "background_cave":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Backgrounds", "Background_Cave.png")).convert(),
                 "background_welcome":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Backgrounds", "Background_Welcome.png")).convert(),
-
+                "background_decisions":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Backgrounds", "Background_Decisions.png")).convert(),
 
                 "player_1":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_1.png")).convert_alpha(),
                 "player_2":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_2.png")).convert_alpha(),
                 "player_3":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_3.png")).convert_alpha(),
                 "player_4":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_4.png")).convert_alpha()
-                
-
                 # "menu_placeholder":pygame.image.load("D:\GIT\Emeralds\Graphics\menu_placeholder.png").convert(),
             }
 
@@ -159,9 +156,9 @@ class Renderer():
             with open(os.path.join(basedir, "cache.cache"), "rb") as f:
                 cache = pickle.load(f)
         except FileNotFoundError:
-                cache = {
-                    "cachedSize" : {}
-                }
+            cache = {
+                "cachedSize" : {}
+            }
         
         self._cachedSize = cache["cachedSize"]
         self._cachedGameStats = {}
@@ -185,31 +182,31 @@ class Renderer():
         cache["cachedSize"].update(self._cachedSize)
 
         with open(os.path.join(basedir, "cache.cache"), "wb") as f:
-                pickle.dump(cache, f)
+            pickle.dump(cache, f)
 
     def playerSurfacesGen(self):
         global NUM_OF_PLAYER_SKINS
         
         if self.graphics == "default":
-            surf = pygame.Surface((100,100))
+            surf = pygame.Surface((100, 100))
 
-            surf.fill((255,0,0))
+            surf.fill((255, 0, 0))
             yield surf.copy()
-            surf.fill((255,128,0))
+            surf.fill((255, 128, 0))
             yield surf.copy()
-            surf.fill((255,255,0))
+            surf.fill((255, 255, 0))
             yield surf.copy()
-            surf.fill((0,255,0))
+            surf.fill((0, 255, 0))
             yield surf.copy()
-            surf.fill((0,255,255))
+            surf.fill((0, 255, 255))
             yield surf.copy()
-            surf.fill((0,0,255))
+            surf.fill((0, 0, 255))
             yield surf.copy()
-            surf.fill((127,0,255))
+            surf.fill((127, 0, 255))
             yield surf.copy()
-            surf.fill((255,51,255))
+            surf.fill((255, 51, 255))
             yield surf.copy()
-            surf.fill((255,255,254))
+            surf.fill((255, 255, 254))
             yield surf.copy()
         elif self.graphics == "pola":
             surf = pygame.Surface((100,100))
@@ -352,6 +349,7 @@ class Renderer():
             textRect.center = tileRect.center
 
             tileTexture.blit(textSurf, textRect)
+            self._cachedLastTexture[1] = tileTexture
             return tileTexture
 
     def getFontSurfacesFromString(self, text, fontSize=None, fontStyle=None, fontColor=None, backgroundColor=None, maxTextSize=None):
@@ -457,7 +455,7 @@ class Renderer():
 
         for surfaceIndex in range(len(rulesSurfaces)):
             self.displaySurface.blit(rulesSurfaces[surfaceIndex], (0,bannerHeight + surfaceIndex*rulesSurfHeight))
-        
+
         self.clock.tick(FPS)
         self.checkIfPygameExit()
         self.update()
@@ -484,8 +482,10 @@ class Renderer():
             framerate=1000/self.clock.tick(FPS)
             alphaChange=round(255/(animationTime*framerate))
             alpha+=alphaChange
+        
+        print("Showing round num")
         print("Animation time", time.time() - timeS)
-        print("framerate:",framerate)
+        print("Framerate:",framerate)
 
     def renderWaitingForDecisions(self, playersThatDecide, decisionsDict):
         #decisionsDict should be dictionary with "playersNickname":decision pairs
@@ -650,7 +650,8 @@ class Renderer():
                 TILE_SCALING_SPEED = maxTileSize-currentSize
 
             currentSize += TILE_SCALING_SPEED
-
+        
+        print("Revealing tile")
         print("Scaling Time:", time.time()-tStart)
         print("Framerate:", framerate)
         # whitespaceSize = self.myFont.size(" ")
@@ -698,6 +699,7 @@ class Renderer():
             framerate= 1000/self.clock.tick(FPS)
             DISAPPEARING_SPEED = round(255/(animationTime * framerate))
             alpha-= DISAPPEARING_SPEED
+        print("Revealing tile")
         print("Disappearing time:", time.time()-tStart)
         print("Framerate:", framerate)
 

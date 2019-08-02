@@ -1,0 +1,9 @@
+{
+    "resolution": [
+        800,
+        600
+    ],
+    "fullscreen": false,
+    "num_of_rounds": 5,
+    "texture_pack": "pola"
+}

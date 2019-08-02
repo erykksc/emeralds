@@ -1,20 +1,19 @@
-# __init__.py
+import os
+import socket
 import tornado
 from tornado.httpserver import HTTPServer
 from tornado.options import define, options
 import tornado.web
 from tornado import websocket
 
-import os
-import socket
 from server import jsonED
 
-connections=[]
-usernames={}
+connections = []
+usernames = {}
 
 accept={
-    "n":False,
-    "d":False
+    "n" : False,
+    "d" : False
 }
 
 #ADMIN FUNCTIONS
@@ -119,7 +118,7 @@ class adminWebSocket(tornado.websocket.WebSocketHandler):
 
         elif data[0] == "changeAccept":
             #example: changeAccept d True
-            accept[data[1]]= True if data[2] == "True" else "False"
+            accept[data[1]] = True if data[2] == "True" else "False"
             print("Changing accept", data[1], "to", data[2])
             self.write_message(str(accept))
         
@@ -160,7 +159,7 @@ class WebServer(tornado.web.Application):
 
         define('port', default=8888, help='port to listen on')
         define('ip', default="localhost", help='ip to listen on')
-        define("websocket_max_message_size", default = 128, help="max length in bytes of the socket message")
+        define("websocket_max_message_size", default=128, help="max length in bytes of the socket message")
 
         jsonED.createJson()
         info = jsonED.readFromJson()
@@ -174,6 +173,6 @@ class WebServer(tornado.web.Application):
         self.listen(port)
         tornado.ioloop.IOLoop.instance().start()
 
-if __name__=="__main__":
+if __name__ == "__main__":
     webserver = WebServer()
     

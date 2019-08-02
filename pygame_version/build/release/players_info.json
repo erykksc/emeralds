@@ -1,0 +1,12 @@
+{
+    "last_update": "Fri Aug  2 22:29:47 2019",
+    "ip": "192.168.88.61",
+    "port": 8888,
+    "continue": true,
+    "players": {
+        "eryk": {
+            "decisions": false,
+            "currentDecision": false
+        }
+    }
+}

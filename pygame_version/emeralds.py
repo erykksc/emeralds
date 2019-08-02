@@ -14,8 +14,8 @@ class Emeralds():
         self.numOfRounds = numOfRounds
         #temporary
         #self.renderer.menu()
-        
-    
+
+
     def main(self):
         self.addPlayersToGame()
         self.playGame()
@@ -34,7 +34,7 @@ class Emeralds():
             if self.server.continuteToGame():
                 self.server.stopWaitingForPlayers()
                 self.server.stopWaitingForNicknames()
-                
+
         self.game.addPlayers(self.server.getPlayersNicknames())
 
     def showRules(self):
