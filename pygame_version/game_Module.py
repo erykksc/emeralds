@@ -316,7 +316,7 @@ class Game:
                 if self.players[playerIndex].decides:
                     if not self.players[playerIndex].isExploring():
                         IndexesOfPlayersGB.append(playerIndex)
-
+            print("Players going back:", [self.players[i].nickname for i in IndexesOfPlayersGB])
             # Perform actions for people that are going back
             if len(IndexesOfPlayersGB) > 0:
 
@@ -324,7 +324,7 @@ class Game:
                 for tileIndex in range(len(self.tilePath)-1, -1, -1):
                     tile = self.tilePath[tileIndex]
 
-                    if tile.type == "gems" and tile.getGemsLeft() > 0:
+                    if (tile.type == "gem") and (tile.getGemsLeft() > 0):
                         for playerIndex in IndexesOfPlayersGB:
                             self.players[playerIndex].receiveGems(
                                 math.floor(tile.getGemsLeft()/len(IndexesOfPlayersGB)))

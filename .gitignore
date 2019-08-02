@@ -1,0 +1,7 @@
+.vscode/
+pygame_version/build/
+pygame_version/__pycache__/
+pygame_version/cache.cache
+pygame_version/players_info.json
+
+*.pyc

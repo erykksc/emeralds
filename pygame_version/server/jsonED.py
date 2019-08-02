@@ -1,16 +1,18 @@
+import os
 import json
 import time
 
 FILE_NAME = "players_info.json"
 
+basedir = os.path.abspath("")
 
 def write2json(dic):
-    with open(FILE_NAME, 'w') as f:
+    with open(os.path.join(basedir, FILE_NAME), 'w') as f:
         dic["last_update"] = time.asctime(time.localtime(time.time()))
         json.dump(dic, f, indent=4)
 
 def readFromJson():
-    with open(FILE_NAME) as f:
+    with open(os.path.join(basedir, FILE_NAME)) as f:
         return json.load(f)
 
 def updatePair(key, value):
@@ -30,5 +32,5 @@ def createJson():
         "continue" : False,
         "players" : {}
     }
-    with open(FILE_NAME, 'w') as file:
+    with open(os.path.join(basedir, FILE_NAME), 'w') as file:
         json.dump(dic, file, indent=4)

@@ -1,3 +1,4 @@
+import os
 import time
 import json
 from websocket import create_connection
@@ -5,10 +6,12 @@ import threading
 import asyncio
 from server import internal_webserver
 
+basedir = os.path.abspath("")
+
 def readInfo():
     while True:
         try:
-            with open("players_info.json") as f:
+            with open(os.path.join(basedir, "players_info.json")) as f:
                 return  json.load(f)
         
         except:
@@ -60,32 +63,45 @@ class Server():
         info = readInfo()
         return info["continue"]
 
-    def startWaitingForPlayers(self):
+    def startWaitingForNicknames(self):
         self.ws.send("changeAccept n True")
+        self.ws.recv()
+
+    def stopWaitingForNicknames(self):
+        self.ws.send("changeAccept n False")
+        self.ws.recv()
+
+    def startWaitingForPlayers(self):
         self.ws.send("sendToAll RENDER PRESS_TO_CONTINUE")
+        self.ws.recv()
         self.ws.send("changeContinue False")
+        self.ws.recv()
         self.waitingForPlayersV = True
-        time.sleep(0.2)
     
     def askPlayersForNicknames(self):
         self.ws.send("sendToAll RENDER ENTER_NICKNAMES")
+        self.ws.recv()
 
     def waitingForPlayers(self):
         return self.waitingForPlayersV
 
     def stopWaitingForPlayers(self):
         self.waitingForPlayersV = False
-        self.ws.send("changeAccept n False")
 
     def startWaitingForDecisions(self, playersThatDecide, playersDicts):
         self.playersThatDecide = playersThatDecide
         self.waitingForDecisionsV = True
         self.ws.send("resetDecisions")
+        self.ws.recv()
         self.ws.send("changeAccept d True")
+        self.ws.recv()
         self.ws.send("sendToAll RENDER DECISION")
+        self.ws.recv()
         for player in playersDicts:
             str2Send = "sendToUser " + str(player["nickname"]) + " GEMS " + str(player["securedGems"]) + " " + str(player["unsecuredGems"])
             self.ws.send(str2Send)
+            self.ws.recv()
+
         time.sleep(0.2)
 
 
@@ -97,7 +113,9 @@ class Server():
     def stopWaitingForDecisions(self):
         self.waitingForDecisionsV = False
         self.ws.send("changeAccept d False")
+        self.ws.recv()
         self.ws.send("sendToAll RENDER WAITING")
+        self.ws.recv()
 
     def getDecisions(self):
         info = readInfo()

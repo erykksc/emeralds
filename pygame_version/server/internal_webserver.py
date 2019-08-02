@@ -119,7 +119,7 @@ class adminWebSocket(tornado.websocket.WebSocketHandler):
 
         elif data[0] == "changeAccept":
             #example: changeAccept d True
-            accept[data[1]]= True if data[2]=="True" else "False"
+            accept[data[1]]= True if data[2] == "True" else "False"
             print("Changing accept", data[1], "to", data[2])
             self.write_message(str(accept))
         

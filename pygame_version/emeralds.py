@@ -23,6 +23,7 @@ class Emeralds():
     def addPlayersToGame(self):
         #add players to a self.game
         self.server.startWaitingForPlayers()
+        self.server.startWaitingForNicknames()
         self.server.askPlayersForNicknames()
         while self.server.waitingForPlayers():
             #ask players to join and show players that have already joined
@@ -32,6 +33,7 @@ class Emeralds():
 
             if self.server.continuteToGame():
                 self.server.stopWaitingForPlayers()
+                self.server.stopWaitingForNicknames()
                 
         self.game.addPlayers(self.server.getPlayersNicknames())
 

@@ -1,11 +1,15 @@
+import os
 import json
 import emeralds
 
+
+basedir = os.path.abspath("")
+
 try:
-    with open("launch_settings.json") as f:
+    with open(os.path.join(basedir, "launch_settings.json")) as f:
         settings = json.load(f)
 except FileNotFoundError:
-    with open("launch_settings.json", "w") as f:
+    with open(os.path.join(basedir, "launch_settings.json"), "w") as f:
         settingsDict = {
             "resolution": [800, 600],
             "fullscreen" : False,

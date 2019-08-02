@@ -5,7 +5,7 @@ import random
 import threading
 import os
 import sys
-import json
+import pickle
 # import game_Module
 
 from ctypes import windll
@@ -67,36 +67,36 @@ class Renderer():
         # self.renderingArr = [False, False, False, False] #indexes 0- askPlayersToJoin, 1-showRules, 2-waitForDecisions, 3-showEndOfGameScreen
         if self.graphics == "default":
             self.textures = {
-                "gem":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Tile_Gem.png")).convert(),
-                "relict_full":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Tile_Relict_Full.png")).convert(),
-                "relict_empty":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Tile_Relict_Empty.png")).convert(),
-                "jungle":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Tile_Jungle.png")).convert(),
-                "base":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Tile_Base.png")).convert(),
-                "trap":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Tile_Trap.png")).convert()
+                "gem":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tile_Gem.png")).convert(),
+                "relict_full":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tile_Relict_Full.png")).convert(),
+                "relict_empty":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tile_Relict_Empty.png")).convert(),
+                "jungle":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tile_Jungle.png")).convert(),
+                "base":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tile_Base.png")).convert(),
+                "trap":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tile_Trap.png")).convert()
 
                 # "menu_placeholder":pygame.image.load("D:\GIT\Emeralds\Graphics\menu_placeholder.png").convert(),
             }
         elif self.graphics == "pola":
             self.textures = {
-                "gem":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Tiles", "Tile_Gem.png")).convert(),
-                "relict_full":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Tiles", "Tile_Relict_Full.png")).convert(),
-                "relict_empty":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Tiles", "Tile_Relict_Empty.png")).convert(),
-                "jungle":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Tiles", "Tile_Jungle.png")).convert(),
-                "base":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Tiles", "Tile_Base.png")).convert(),
-                "trap_default":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Tiles", "Tile_Trap.png")).convert(),
-                "trap_lava":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Tiles", "Tile_Trap_Lava.png")).convert(),
-                "trap_spiders":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Tiles", "Tile_Trap_Spider.png")).convert(),
-                "trap_snakes":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Tiles", "Tile_Trap_Snakes.png")).convert(),
-                "trap_wreckingball":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Tiles", "Tile_Trap_Wreckingball.png")).convert(),
+                "gem":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tiles", "Tile_Gem.png")).convert(),
+                "relict_full":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tiles", "Tile_Relict_Full.png")).convert(),
+                "relict_empty":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tiles", "Tile_Relict_Empty.png")).convert(),
+                "jungle":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tiles", "Tile_Jungle.png")).convert(),
+                "base":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tiles", "Tile_Base.png")).convert(),
+                "trap_default":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tiles", "Tile_Trap.png")).convert(),
+                "trap_lava":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tiles", "Tile_Trap_Lava.png")).convert(),
+                "trap_spiders":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tiles", "Tile_Trap_Spider.png")).convert(),
+                "trap_snakes":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tiles", "Tile_Trap_Snakes.png")).convert(),
+                "trap_wreckingball":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tiles", "Tile_Trap_Wreckingball.png")).convert(),
 
-                "background_cave":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Backgrounds", "Background_Cave.png")).convert(),
-                "background_welcome":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Backgrounds", "Background_Welcome.png")).convert(),
+                "background_cave":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Backgrounds", "Background_Cave.png")).convert(),
+                "background_welcome":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Backgrounds", "Background_Welcome.png")).convert(),
 
 
-                "player_1":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Players", "Player_1.png")).convert_alpha(),
-                "player_2":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Players", "Player_2.png")).convert_alpha(),
-                "player_3":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Players", "Player_3.png")).convert_alpha(),
-                "player_4":pygame.image.load(os.path.join(basedir, "Graphics", graphics, "Players", "Player_4.png")).convert_alpha()
+                "player_1":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_1.png")).convert_alpha(),
+                "player_2":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_2.png")).convert_alpha(),
+                "player_3":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_3.png")).convert_alpha(),
+                "player_4":pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_4.png")).convert_alpha()
                 
 
                 # "menu_placeholder":pygame.image.load("D:\GIT\Emeralds\Graphics\menu_placeholder.png").convert(),
@@ -150,12 +150,42 @@ class Renderer():
             ]
         }
 
+        self.loadCache()
+    
+    def loadCache(self):
+        basedir = os.path.abspath("")
 
-        self._cachedSize = {}
+        try:
+            with open(os.path.join(basedir, "cache.cache"), "rb") as f:
+                cache = pickle.load(f)
+        except FileNotFoundError:
+                cache = {
+                    "cachedSize" : {}
+                }
+        
+        self._cachedSize = cache["cachedSize"]
         self._cachedGameStats = {}
         self._cachedPlayersInfo = {"nicknames" : []}
         self._cachedLastRenderedFunction = ""
+        self._cachedLastTexture = ["", 0]
 
+    def saveCache(self):
+        basedir = os.path.abspath("")
+
+        try:
+            with open(os.path.join(basedir, "cache.cache"), "rb") as f:
+                cache = pickle.load(f)
+        except FileNotFoundError:
+            with open(os.path.join(basedir, "cache.cache"), "wb") as f:
+                cacheDict = {
+                    "cachedSize" : {}
+                }
+                cache = cacheDict
+
+        cache["cachedSize"].update(self._cachedSize)
+
+        with open(os.path.join(basedir, "cache.cache"), "wb") as f:
+                pickle.dump(cache, f)
 
     def playerSurfacesGen(self):
         global NUM_OF_PLAYER_SKINS
@@ -186,7 +216,7 @@ class Renderer():
 
             playerNum = 1
             while playerNum<4:
-                yield self.getTileTexture("player_" + str(playerNum))
+                yield self.getTexture("player_" + str(playerNum))
                 playerNum+=1
 
             surf.fill((255,128,0))
@@ -207,12 +237,18 @@ class Renderer():
     def checkIfPygameExit(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                self.saveCache()
                 pygame.quit()
                 quit()
 
-    def getTileTexture(self, tileName):
+    def getTexture(self, tileName):
         #final version should be:
         #return self.textures[tileName]
+
+        if tileName == self._cachedLastTexture[0]:
+            return self._cachedLastTexture[1]
+        else:
+            self._cachedLastTexture[0] = tileName
 
         if self.graphics == "default":
 
@@ -234,31 +270,44 @@ class Renderer():
             elif tileName[:6] == "relict":
                 value = tileName.split("_")[1]
 
-                if tileName[-4:] == "Full":
-                    textureName = "relict_Full"
+                if tileName[-4:] == "full":
+                    textureName = "relict_full"
                     #temporarry
                     text = value
                 else:
-                    textureName = "relict_Empty"
+                    textureName = "relict_empty"
                     text = ""
                 
             elif tileName[:10]=="background":
-                if tileName[11:]=="cave":
-                    caveSurf = pygame.Surface((10,10))
+                if tileName[11:] == "cave":
+                    caveSurf = pygame.Surface((10, 10))
                     caveSurf.fill((255,255,0,255))
-                    return caveSurf
+                    self._cachedLastTexture[1] = caveSurf
+                    return caveSurf.copy()
+                elif tileName[11:] == "decisions":
+                    decisionSurf = pygame.Surface((10, 10))
+                    decisionSurf.fill((0,0,0))
+                    self._cachedLastTexture[1] = decisionSurf
+                    return decisionSurf.copy()
+                elif tileName[11:] == "welcome":
+                    welcomeSurf = pygame.Surface((10,10))
+                    welcomeSurf.fill((0,0,0))
+                    self._cachedLastTexture[1] = welcomeSurf
+                    return welcomeSurf.copy()
 
             else:
                 textureName = tileName
                 text = ""
 
             tileTexture = self.textures[textureName].copy()
+            tileTexture = pygame.transform.scale(tileTexture, (400, 400))
             tileRect = tileTexture.get_rect()
             textSurf = self.getFontSurfacesFromString(text, maxTextSize=(tileTexture.get_width()/2, tileTexture.get_height()/2))[0]
             textRect = textSurf.get_rect()
             textRect.center = tileRect.center
 
             tileTexture.blit(textSurf, textRect)
+            self._cachedLastTexture[1] = tileTexture
             return tileTexture
         
         elif self.graphics == "pola":
@@ -344,10 +393,9 @@ class Renderer():
 
         if (self.playersInfo["nicknames"] == self._cachedPlayersInfo["nicknames"]) and (self._cachedLastRenderedFunction == "renderPlayersJoined"):
             framerate=1000/self.clock.tick(FPS)
-            print("framerate: ", framerate)
             self.checkIfPygameExit()
         else:
-            caveSurf = self.getTileTexture("background_welcome")
+            caveSurf = self.getTexture("background_welcome")
             caveSurf=pygame.transform.scale(caveSurf, (self.displaySurface.get_size()))
             self.displaySurface.blit(caveSurf, (0,0))
 
@@ -369,7 +417,6 @@ class Renderer():
             self._cachedLastRenderedFunction = "renderPlayersJoined"
 
             framerate=1000/self.clock.tick(FPS)
-            print("framerate: ", framerate)
             self.checkIfPygameExit()
             self.update()
 
@@ -443,7 +490,10 @@ class Renderer():
     def renderWaitingForDecisions(self, playersThatDecide, decisionsDict):
         #decisionsDict should be dictionary with "playersNickname":decision pairs
         #temporary should add graphics
-        self.displaySurface.fill((0, 0, 0))
+        self._cachedLastRenderedFunction = "renderWaitingForDecisions"
+        backgroundSurf = self.getTexture("background_decisions")
+        backgroundSurf = pygame.transform.scale(backgroundSurf, self.displaySurface.get_size())
+        self.displaySurface.blit(backgroundSurf, (0, 0))
 
         nicknamesDeciding = ["Waiting for decisions of:"]
         for nickname in playersThatDecide:
@@ -477,6 +527,7 @@ class Renderer():
         # for playerPast, playerCurr in zip(pastPlayers, currentPlayers):
         #     if playerCurr["inCamp"] and  not playerPast["inCamp"]:
         #         playersThatWentBack.append(playerCurr["nickname"])
+        self._cachedLastRenderedFunction = "renderGoingBack"
         
 
         tileMap = self.getTileMapFromTilePath(tilePath)
@@ -564,7 +615,7 @@ class Renderer():
     def showRevealedTile(self, tilePath, playersDicts):
         #temporary, final should be:
         #background=pygame.image.load("D:\GIT\Emeralds\Graphics\Tile_Gem.png"
-        caveSurf = self.getTileTexture("background_cave")
+        caveSurf = self.getTexture("background_cave")
         caveSurf=pygame.transform.scale(caveSurf, (self.displaySurface.get_size()))
 
         tileMapBackground = pygame.Surface((10,10))
@@ -572,7 +623,7 @@ class Renderer():
         tileMapBackground = pygame.transform.scale(tileMapBackground, (self.displaySurface.get_size()))
 
 
-        revealedTileSurf = self.getTileTexture(tilePath[-1])
+        revealedTileSurf = self.getTexture(tilePath[-1])
         currentSize = 1
 
         maxTileSize = int(self.displaySurface.get_height()*0.8)
@@ -794,7 +845,7 @@ class Renderer():
         tileToPlace = pygame.Surface(tileMapRects[0][0].size)
         for x in range(len(tileMap)):
             for y in range(len(tileMap[0])):
-                tileTexture = self.getTileTexture(tileMap[x][y])
+                tileTexture = self.getTexture(tileMap[x][y])
                 tileToPlace = pygame.transform.scale(tileTexture, tileMapRects[x][y].size)
                 tileMapSurface.blit(tileToPlace , tileMapRects[x][y])
 
