@@ -226,7 +226,7 @@ class Game:
     def getGameStats(self):
         #temporary
         stats = {
-            "winners": self.getWinners,
+            "winners": self.getWinners(),
             "tilesRevealed": "Not yet implemented", 
             "discoveredGems": "Not yet implemented",
              "collectedGems": "Not yet implemented"
@@ -234,10 +234,10 @@ class Game:
         return stats
 
     def getWinners(self):
-        most = 0
+        most = -1
         winners = []
         for player in self.players:
-            if player.securedGems >most:
+            if player.securedGems > most:
                 most = player.securedGems
         
         for player in self.players:

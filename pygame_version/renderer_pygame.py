@@ -879,17 +879,17 @@ class Renderer():
         self.clock.tick(FPS)
 
     def showEndOfGameScreen(self, gameStats):
-        if gameStats in self._cachedGameStats:
-            cacheHit = True
-            displayStr = self._cachedGameStats[gameStats]
-        else:
-            cacheHit = False
-            displayStr = "Game stats\n"
-            winnersStr = ", ".join(gameStats["winners"])
-            displayStr += f"Winner/s: {winnersStr}\n" + "tiles revealed: " + str(gameStats["tilesRevealed"]) + "\n"
-            displayStr = displayStr + "discovered gems: " + str(gameStats["discoveredGems"]) + "\n"
-            displayStr = displayStr + "gems collected: " + str(gameStats["collectedGems"])
-            self._cachedGameStats[gameStats] = displayStr
+        # if gameStats in self._cachedGameStats:
+        #     cacheHit = True
+        #     displayStr = self._cachedGameStats[gameStats]
+        # else:
+            # cacheHit = False
+        displayStr = "Game stats\n"
+        winnersStr = ", ".join(gameStats["winners"])
+        displayStr += f"Winner/s: {winnersStr}\n" + "tiles revealed: " + str(gameStats["tilesRevealed"]) + "\n"
+        displayStr = displayStr + "discovered gems: " + str(gameStats["discoveredGems"]) + "\n"
+        displayStr = displayStr + "gems collected: " + str(gameStats["collectedGems"])
+        # self._cachedGameStats[gameStats] = displayStr
 
         maxTextSize = (self.displaySurface.get_width(), self.displaySurface.get_height()/len(displayStr.split("\n")))
         textSurfs = self.getFontSurfacesFromString(displayStr, maxTextSize=maxTextSize)
