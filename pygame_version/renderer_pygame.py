@@ -754,6 +754,9 @@ class Renderer():
                         colPos += change
                         rowPos +=1
                     continue
+                if (rowPos == baseHeight) and (change == 1) and (colPos < baseWidth):
+                    colPos += 1
+                    continue
 
                 if currIndex == lookingFor:
                     return (rowPos, colPos)
@@ -983,6 +986,12 @@ if __name__=="__main__":
     resolution=(1000, 700)
     renderer=Renderer(resolution=resolution, fullscreen=False)
 
+    q = 1
+    while q < 35:
+        w = [str(z) for z in range(q)]
+        print(renderer.getTileIndexes(0, w, 8, 6, 2, 2))
+        q += 1
+
 
     # renderer.updatePlayersJoined([str(i) for i in range(9)])
 
@@ -994,8 +1003,8 @@ if __name__=="__main__":
     # pygame.time.wait(10000)
     # renderer.stopAskPlayersToJoin()
 
-    for i in range(1,6):
-        renderer.showRoundNum(i)
+    # for i in range(1,6):
+    #     renderer.showRoundNum(i)
 
     # renderer.startWaitingForDecisions(["Nickname0", "Nickname1", "Nickname2"])
     # pygame.time.wait(1000)

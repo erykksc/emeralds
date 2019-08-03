@@ -6,7 +6,7 @@ class Emeralds():
 
     def __init__(self, numOfRounds=5, resolution=(800, 600), fullscreen=False, graphics="default"):
         self.server = server_pygame.Server()
-        self.gameIP = self.server.getIp() 
+        self.gameIP = self.server.getIp()
         self.gamePort = self.server.getPort()
         self.game = game_Module.Game()
         self.renderer = renderer_pygame.Renderer(resolution=resolution, fullscreen=fullscreen, graphics=graphics)
