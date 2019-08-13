@@ -1,0 +1,6 @@
+Goal: collect as many gems as possible
+Players always share gems equally
+Only if one player goes back, he will collect relicts
+The same trap twice means that all players exploring
+will lose all gems collected
+in a round

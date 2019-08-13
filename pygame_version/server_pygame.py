@@ -56,7 +56,7 @@ class Server():
         return self.port
     
     def getPlayersNicknames(self):
-        info = readInfo()            
+        info = readInfo()
         return [nick for nick in info["players"]]
 
     def continuteToGame(self):

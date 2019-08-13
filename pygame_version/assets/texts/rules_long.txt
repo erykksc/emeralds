@@ -1,0 +1,14 @@
+The goal of the game is to collect as many gems as you can.
+In order to do so you have to explore the cave.
+In the cave you can find gems, relicts and traps.
+If you find gems the gems will be split among 
+the players that explore and the reminder will stay in place.
+If you find relict it will stay in place.
+If you find the same type of trap 2 times you will lose all 
+the gems from this round.
+You can also go back to save the gems you have collected 
+in a round and collect all the gems that were left behind
+(if more players will go back at the same time the gems will 
+also be split among them).
+If only one player will go back he will collect all the relicts
+and thus will earn as many gems as the relicts are worth.

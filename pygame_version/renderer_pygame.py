@@ -6,6 +6,7 @@ import threading
 import os
 import sys
 import pickle
+import json
 # import game_Module
 
 from ctypes import windll
@@ -15,7 +16,11 @@ windll.user32.SetProcessDPIAware()
 BASE_TILES_NAMES_GLOBAL = [["base", "base"] for _ in range(2)]
 WIDTH_WHOLE_MAP_GLOBAL = 8
 HEIGHT_WHOLE_MAP_GLOBAL = 6
-RULES_GLOBAL = "Rule 1\nRule 2\nRule 3"
+rulesPath = os.path.join(os.path.abspath(""), "assets", "texts", "rules.txt")
+
+RULES_GLOBAL = ""
+with open(rulesPath, "r") as f:
+    RULES_GLOBAL = f.read()
 FPS = 60
 NUM_OF_PLAYER_SKINS = 8
 
@@ -28,6 +33,7 @@ class Renderer():
         global RULES_GLOBAL
 
         self.graphics = graphics
+
 
         self.fontStyle = fontStyle
         self.myFontColor = fontColor
@@ -55,7 +61,7 @@ class Renderer():
 
         pygame.init()
         self.clock = pygame.time.Clock()
-
+        
         if fullscreen:
             self.displaySurface = pygame.display.set_mode(
                 resolution, pygame.FULLSCREEN)
@@ -63,6 +69,19 @@ class Renderer():
             self.displaySurface = pygame.display.set_mode(resolution)
 
         pygame.display.set_caption("Emeralds")
+
+
+        #fullscreen, num_of_rounds are just placeholders, the real values will be loaded from json file
+        self.settings = {
+            "resolutions" : pygame.display.list_modes(),
+            "resolution" : self.displaySurface.get_size(),
+            "resolutionStr" : str(self.displaySurface.get_width())+"×"+str(self.displaySurface.get_height()),
+            "fullscreen" : fullscreen,
+            "num_of_rounds" : 0,
+            "max_round_num" : 10,
+            "texture_packs" : ["default", "pola"],
+            "texture_pack" : graphics
+        }
 
         basedir = os.path.abspath("")
         # self.renderingArr = [False, False, False, False] #indexes 0- askPlayersToJoin, 1-showRules, 2-waitForDecisions, 3-showEndOfGameScreen
@@ -74,7 +93,6 @@ class Renderer():
                 "jungle": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tile_Jungle.png")).convert(),
                 "base": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tile_Base.png")).convert(),
                 "trap": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tile_Trap.png")).convert()
-                # "menu_placeholder":pygame.image.load("D:\GIT\Emeralds\Graphics\menu_placeholder.png").convert(),
             }
         elif self.graphics == "pola":
             self.textures = {
@@ -92,11 +110,20 @@ class Renderer():
                 "background_cave": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Backgrounds", "Background_Cave.png")).convert(),
                 "background_welcome": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Backgrounds", "Background_Welcome.png")).convert(),
                 "background_decisions": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Backgrounds", "Background_Decisions.png")).convert(),
+                "background_menu": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Backgrounds", "Background_Menu.png")).convert(),
+                "background_credits": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Backgrounds", "Background_Credits.png")).convert(),
+
 
                 "player_1": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_1.png")).convert_alpha(),
                 "player_2": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_2.png")).convert_alpha(),
                 "player_3": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_3.png")).convert_alpha(),
-                "player_4": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_4.png")).convert_alpha()
+                "player_4": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_4.png")).convert_alpha(),
+                "player_5": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_5.png")).convert_alpha(),
+                "player_6": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_6.png")).convert_alpha(),
+                "player_7": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_7.png")).convert_alpha(),
+                "player_8": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_8.png")).convert_alpha(),
+                "player_9": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Players", "Player_9.png")).convert_alpha(),
+
                 # "menu_placeholder":pygame.image.load("D:\GIT\Emeralds\Graphics\menu_placeholder.png").convert(),
             }
 
@@ -185,6 +212,24 @@ class Renderer():
         with open(os.path.join(basedir, "cache.cache"), "wb") as f:
             pickle.dump(cache, f)
 
+    def clearCache(self):
+        self._cachedSize = {}
+        self._cachedGameStats = {}
+        self._cachedPlayersInfo = {"nicknames": []}
+        self._cachedLastRenderedFunction = ""
+        self._cachedLastTexture = ["", 0]
+
+    def saveSettings(self):
+        BASE_DIR = os.path.abspath("")
+        with open(os.path.join(BASE_DIR, "launch_settings.json"), "w") as f:
+            settingsDict = {
+                "resolution": self.settings["resolution"],
+                "fullscreen" : self.settings["fullscreen"],
+                "num_of_rounds" : self.settings["num_of_rounds"],
+                "texture_pack" : self.settings["texture_pack"]
+            }
+            json.dump(settingsDict, f, indent=4)
+
     def playerSurfacesGen(self):
         global NUM_OF_PLAYER_SKINS
 
@@ -209,41 +254,51 @@ class Renderer():
             yield surf.copy()
             surf.fill((255, 255, 254))
             yield surf.copy()
+
         elif self.graphics == "pola":
             surf = pygame.Surface((100, 100))
 
             playerNum = 1
-            while playerNum < 4:
+            while playerNum < 10:
                 yield self.getTexture("player_" + str(playerNum))
                 playerNum += 1
 
-            surf.fill((255, 128, 0))
-            yield surf.copy()
-            surf.fill((255, 255, 0))
-            yield surf.copy()
-            surf.fill((0, 255, 0))
-            yield surf.copy()
-            surf.fill((0, 255, 255))
-            yield surf.copy()
-            surf.fill((0, 0, 255))
-            yield surf.copy()
+            # surf.fill((255, 128, 0))
+            # yield surf.copy()
+            # surf.fill((255, 255, 0))
+            # yield surf.copy()
+            # surf.fill((0, 255, 0))
+            # yield surf.copy()
+            # surf.fill((0, 255, 255))
+            # yield surf.copy()
+            # surf.fill((0, 0, 255))
+            # yield surf.copy()
         # final
         # for i in range(1, NUM_OF_PLAYER_SKINS+1):
         #     yield(pygame.image.load("D:\GIT\Emeralds\Graphics\Player_Skin_" + str(i) ".png"))
         # close()
 
     def checkIfPygameExit(self):
-        for event in pygame.event.get():
+        #checks for quit event  
+        for event in pygame.event.get(): #eventtype=(pygame.QUIT
             if event.type == pygame.QUIT:
-                self.saveCache()
-                pygame.quit()
-                quit()
+                self.onExit()
+        #checks for alt + f4
+        keys = pygame.key.get_pressed()
+        if (keys[pygame.K_LALT] or keys[pygame.K_RALT]) and keys[pygame.K_F4]:
+            self.onExit()
+        
+        
+    def onExit(self):
+        self.saveCache()
+        pygame.quit()
+        quit()
 
     def getTexture(self, tileName):
         # final version should be:
         # return self.textures[tileName]
 
-        if tileName == self._cachedLastTexture[0]:
+        if tileName == self._cachedLastTexture[0] and self._cachedLastRenderedFunction != "applySettings":
             return self._cachedLastTexture[1]
         else:
             self._cachedLastTexture[0] = tileName
@@ -297,6 +352,11 @@ class Renderer():
                     menuSurf.fill((0, 0, 0))
                     self._cachedLastTexture[1] = menuSurf
                     return menuSurf.copy()
+                elif tileName[11:] == "credits":
+                    creditsSurf = pygame.Surface((10, 10))
+                    creditsSurf.fill((0, 0, 0))
+                    self._cachedLastTexture[1] = creditsSurf
+                    return creditsSurf.copy()
 
             else:
                 textureName = tileName
@@ -350,18 +410,19 @@ class Renderer():
 
             tileTexture = self.textures[textureName].copy()
             tileTexture = pygame.transform.scale(tileTexture, (400, 400))
-            tileRect = tileTexture.get_rect()
-            textSurf = self.getFontSurfacesFromString(text, maxTextSize=(
-                tileTexture.get_width()/2, tileTexture.get_height()/2))[0]
-            textRect = textSurf.get_rect()
-            textRect.center = tileRect.center
+            if text != "":
+                tileRect = tileTexture.get_rect()
+                textSurf = self.getFontSurfacesFromString(text, maxTextSize=(
+                    tileTexture.get_width()/2, tileTexture.get_height()/2))[0]
+                textRect = textSurf.get_rect()
+                textRect.center = tileRect.center
 
-            tileTexture.blit(textSurf, textRect)
+                tileTexture.blit(textSurf, textRect)
             self._cachedLastTexture[1] = tileTexture
             return tileTexture
 
-    def getFontSurfacesFromString(self, text, fontSize=None, fontStyle=None, fontColor=None, backgroundColor=None, maxTextSize=None):
-        tStart = time.time()
+    def getFontSurfacesFromString(self, text, fontSize=None, fontStyle=None, fontColor=None, backgroundColor=None, maxTextSize=None, antialias=False):
+        # tStart = time.time()
         if not fontStyle:
             fontStyle = self.fontStyle
         if not fontColor:
@@ -377,9 +438,35 @@ class Renderer():
                 cacheHit = False
                 size = max(maxTextSize)
             font = pygame.font.SysFont(fontStyle, size)
-            while (font.size(longestText)[0] > maxTextSize[0]) or (font.size(longestText)[1] > maxTextSize[1]):
-                size -= 4
+            #same thing as in the loop
+            longestTextSize = font.size(longestText)
+            differenceWidth = longestTextSize[0] - maxTextSize[0]
+            differenceHeight = longestTextSize[1] - maxTextSize[1]
+
+            while (differenceWidth > 0) or (differenceHeight > 0):
+                if differenceWidth > 9000 or  differenceHeight > 9000:
+                    size -= 100
+                elif differenceWidth > 1100 or  differenceHeight > 1100:
+                    size -= 20
+                elif differenceHeight > 20:
+                    size -= 10
+                elif differenceHeight > 10:
+                    size -= 2
+                else:
+                    size -= 1
+                
+                if size < 1:
+                    raise Exception("Too much text, no font could be found")
+                    break
+
+                differenceWidth = longestTextSize[0] - maxTextSize[0]
+                differenceHeight = longestTextSize[1] - maxTextSize[1]
                 font = pygame.font.SysFont(fontStyle, size)
+                longestTextSize = font.size(longestText)
+                print("size:", size, ",", longestTextSize)
+                print("difference in width:", differenceWidth, "difference in height:", differenceHeight)
+                
+            # print("found fontSize:", size)
             fontSize = size
             if not cacheHit:
                 self._cachedSize[(maxTextSize, longestText)] = size
@@ -387,13 +474,13 @@ class Renderer():
         if fontSize == None and maxTextSize == None:
             raise Exception("No fontSize nor maxTextHeight given as arguments")
 
+        font = pygame.font.SysFont(fontStyle, fontSize)
         surfaces = []
         for line in text.split("\n"):
-            font = pygame.font.SysFont(fontStyle, fontSize)
             surfaces.append(font.render(
-                line, True, fontColor, backgroundColor))
-        tStop = time.time()
-
+                line, antialias, fontColor, backgroundColor))
+        # tStop = time.time()
+        # print("found in:", tStop - tStart)
         return surfaces
 
     def renderPlayersJoined(self, ipAdress, port):
@@ -431,6 +518,10 @@ class Renderer():
             framerate = 1000/self.clock.tick(FPS)
             self.checkIfPygameExit()
             self.update()
+        if pygame.key.get_pressed()[pygame.K_ESCAPE]:
+            return "go_back"
+        else:
+            return ""
 
     def updatePlayersJoined(self, playerNicknames):
         # temporary have to add a way to limit adding players
@@ -455,27 +546,31 @@ class Renderer():
         for nick in toDel:
             del self.playersInfo["players"][nick]
 
-    def showRules(self):
-        self.displaySurface.fill((0, 0, 0))
+    def renderRules(self):
+        if self._cachedLastRenderedFunction != "renderRules":
+            self._cachedLastRenderedFunction != "renderRules"
+            self.displaySurface.fill((0, 0, 0))
 
-        # display banner Rules:
-        bannerMaxSize = (self.displaySurface.get_width(),
-                         self.displaySurface.get_height()*0.2)
-        bannerSurf = self.getFontSurfacesFromString(
-            "Rules:", maxTextSize=bannerMaxSize)[0]
-        bannerHeight = bannerSurf.get_height()
-        self.displaySurface.blit(
-            bannerSurf, (self.calculateCenterX(bannerSurf), 0))
-
-        maxRulesTextSize = (self.displaySurface.get_width(
-        )*0.9, self.displaySurface.get_height()/len(self.rules.split("\n")) - bannerHeight)
-        rulesSurfaces = self.getFontSurfacesFromString(
-            self.rules, maxTextSize=maxRulesTextSize)
-        rulesSurfHeight = rulesSurfaces[0].get_height()
-
-        for surfaceIndex in range(len(rulesSurfaces)):
+            # display banner Rules:
+            bannerMaxSize = (self.displaySurface.get_width(),
+                            self.displaySurface.get_height()*0.15)
+            bannerSurf = self.getFontSurfacesFromString(
+                "Rules:", maxTextSize=bannerMaxSize)[0]
+            bannerHeight = bannerSurf.get_height()
             self.displaySurface.blit(
-                rulesSurfaces[surfaceIndex], (0, bannerHeight + surfaceIndex*rulesSurfHeight))
+                bannerSurf, (self.calculateCenterX(bannerSurf), 0))
+
+            maxRulesTextSize = (self.displaySurface.get_width(),
+                (self.displaySurface.get_height() - bannerHeight)/len(self.rules.split("\n")))#/len(self.rules.split("\n")) )
+            print("max rules size:", maxRulesTextSize)
+            print("rules length", len(self.rules.split("\n")))
+            rulesSurfaces = self.getFontSurfacesFromString(
+                self.rules, maxTextSize=maxRulesTextSize)
+            ruleSurfHeight = rulesSurfaces[0].get_height()
+
+            for surfaceIndex in range(len(rulesSurfaces)):
+                self.displaySurface.blit(
+                    rulesSurfaces[surfaceIndex], (0, bannerHeight + surfaceIndex*ruleSurfHeight))
 
         self.clock.tick(FPS)
         self.checkIfPygameExit()
@@ -540,49 +635,296 @@ class Renderer():
         self.update()
 
     def renderMenu(self):
-        
         displaySize = self.displaySurface.get_size()
+        returnString = ""
 
+        backgroundSurf = self.getTexture("background_menu")
+        backgroundSurf = pygame.transform.scale(
+            backgroundSurf, displaySize)
         if self._cachedLastRenderedFunction != "renderMenu":
-            backgroundSurf = self.getTexture("background_menu")
-            backgroundSurf = pygame.transform.scale(backgroundSurf, displaySize)
-            self.displaySurface.blit(backgroundSurf, displaySize)
-            self._cachedLastRenderedFunction = "renderMenu"
-            
+            self.displaySurface.blit(backgroundSurf, (0, 0))
+
             emeraldsTextSurf = self.getFontSurfacesFromString(
                 "Emeralds", fontColor=(235, 81, 61), maxTextSize=(displaySize[0]*0.6, displaySize[1]*0.2))[0]
             emeraldsTextRect = emeraldsTextSurf.get_rect()
             emeraldsTextRect.center = (displaySize[0]/2, displaySize[1]*0.1)
             self.displaySurface.blit(emeraldsTextSurf, emeraldsTextRect)
 
-            pygame.display.update()
 
         menuTexts = ["Play", "Settings", "Credits", "Quit"]
+        #indexes have to be the same as the menuTexts
         longestText = max(menuTexts, key=len)
         menuString = "\n".join(menuTexts)
         menuTextSurfs = self.getFontSurfacesFromString(
             menuString, maxTextSize=(displaySize[0]*0.25, displaySize[1]*0.15))
 
-        mousePos = pygame.mouse.get_pos()
         menuTextRects = []
         index = 0
         for surf in menuTextSurfs:
             rect = surf.get_rect()
-            rect.center = (displaySize[0]/2, displaySize[1]*0.15*index + displaySize[1]*0.35)
+            rect.center = (displaySize[0]/2, displaySize[1]
+                           * 0.15*index + displaySize[1]*0.35)
             menuTextRects.append(rect)
-            if rect.collidepoint(mousePos):
-                newSurf = self.getFontSurfacesFromString(menuTexts[index] + "\n" + longestText, maxTextSize=(displaySize[0]*0.25, displaySize[1]*0.15), fontColor=(212, 219, 66))[0]
-                self.displaySurface.blit(newSurf, rect)                
-            else:
-                self.displaySurface.blit(surf, rect)
+
+            self.displaySurface.blit(surf, rect)
             index += 1
-            
-        pygame.display.update(menuTextRects)
+
+        mousePos = pygame.mouse.get_pos()
+        for i in range(len(menuTextRects)):
+            if menuTextRects[i].collidepoint(mousePos):
+                newSurf = self.getFontSurfacesFromString(menuTexts[i] + "\n" + longestText, maxTextSize=(
+                    displaySize[0]*0.25, displaySize[1]*0.15), fontColor=(212, 219, 66))[0]
+                #blits the background
+                self.displaySurface.blit(backgroundSurf, menuTextRects[i], menuTextRects[i])
+                self.displaySurface.blit(newSurf, menuTextRects[i])
+                break
+        
+        for event in pygame.event.get(eventtype=pygame.MOUSEBUTTONUP):
+            if event.type == pygame.MOUSEBUTTONUP:
+                clickPos = pygame.mouse.get_pos()
+        
+                for i in range(len(menuTextRects)):
+                    if menuTextRects[i].collidepoint(clickPos):
+                        returnString = menuTexts[i]
+
+        if self._cachedLastRenderedFunction != "renderMenu":
+            self._cachedLastRenderedFunction = "renderMenu"
+            pygame.display.update()
+        else:
+            pygame.display.update(menuTextRects)
 
         self.checkIfPygameExit()
         framerate = 1000/self.clock.tick(FPS)
-        print(framerate)
+        # print(framerate)
+        if returnString == "Quit":
+            self.onExit()
+        else:
+            return returnString
         
+    def renderPause(self):
+        print("renderingPause")
+        displaySize = self.displaySurface.get_size()
+        # pauseSurface = pygame.Surface(displaySize)
+        # pauseSurface.fill(255, 0, 255) #magenta color
+        # pauseSurface.set_colorkey((255, 0, 255))
+        
+        pauseTextsSurfs = self.getFontSurfacesFromString("Resume\nMenu", maxTextSize=(displaySize[0]/3, displaySize[1]/10))
+        resumeSurf = pauseTextsSurfs[0]
+        resumeRect = resumeSurf.get_rect()
+        resumeRect.center = (displaySize[0]/2, displaySize[1]/2 - resumeRect.height)
+
+        menuSurf = pauseTextsSurfs[1]
+        menuRect = resumeSurf.get_rect()
+        menuRect.center = (displaySize[0]/2, displaySize[1]/2 + menuRect.height)
+
+        pauseTextsRects = [resumeRect, menuRect]
+        self.displaySurface.blit(resumeSurf, resumeRect)
+        self.displaySurface.blit(menuSurf, menuRect)
+
+        #checks if the mouse if over a rectangle
+        mousePos = pygame.mouse.get_pos()
+        for i in range(len(pauseTextsRects)):
+            if pauseTextsRects[i].collidepoint(mousePos):
+                newSurf = self.getFontSurfacesFromString(["Resume", "Menu"][i] + "\n" + "Resume",
+                    maxTextSize=(displaySize[0]/3, displaySize[1]/10),
+                    fontColor=(212, 219, 66))[0]
+                #blits the background
+                self.displaySurface.blit(newSurf, pauseTextsRects[i])
+                break
+        
+        #checks if there was a click
+        returnString = ""
+        for event in pygame.event.get(eventtype=pygame.MOUSEBUTTONUP):
+            if event.type == pygame.MOUSEBUTTONUP:
+                clickPos = pygame.mouse.get_pos()
+        
+                for i in range(len(pauseTextsRects)):
+                    if pauseTextsRects[i].collidepoint(clickPos):
+                        returnString = ["Resume", "Menu"][i]
+        
+        self.update()
+
+        self.checkIfPygameExit()
+        self.clock.tick(FPS)
+
+        return returnString
+    
+    def renderSettings(self):
+        
+        if self._cachedLastRenderedFunction != "renderSettings":
+            with open(os.path.join(os.path.abspath(""), "launch_settings.json")) as f:
+                settings = json.load(f)
+            self.settings["num_of_rounds"] = settings["num_of_rounds"]
+            
+            
+        displaySize = self.displaySurface.get_size()
+
+        returnString = ""
+
+        backgroundSurf = self.getTexture("background_menu")
+        backgroundSurf = pygame.transform.scale(
+            backgroundSurf, displaySize)
+            
+        if self._cachedLastRenderedFunction != "renderSettings":
+            self.displaySurface.blit(backgroundSurf, (0, 0))
+
+        settingsTexts = [
+            "Resolution", self.settings["resolutionStr"],
+            "Fullscreen", str(self.settings["fullscreen"]),
+            "Number of rounds", str(self.settings["num_of_rounds"]),
+            "Texture pack", self.settings["texture_pack"]
+            ]
+
+        settingsTexts.extend(["Go back", "Apply"])
+        #indexes have to be the same as the settingsTexts
+        longestText = max(settingsTexts, key=len)
+
+        settingsString = "\n".join(settingsTexts)
+        settingsTextSurfs = self.getFontSurfacesFromString(
+            settingsString,
+            maxTextSize=(displaySize[0]/3, displaySize[1]/((len(settingsTexts)+1)/2)),
+            fontColor=(255, 255, 255)
+            )
+
+        settingsTextRects = []
+        index = 0
+        verticalPos = 0
+        for surf in settingsTextSurfs:
+                
+            rect = surf.get_rect()
+
+            if index % 2 == 0:
+                rect.center = (displaySize[0]/3, 0)
+                rect.top = displaySize[1]/((len(settingsTexts)+1)/2) * verticalPos + 50
+            else:
+                rect.center = (2*displaySize[0]/3, 0)
+                rect.top = displaySize[1]/((len(settingsTexts)+1)/2) * verticalPos + 50        
+                verticalPos += 1
+            index += 1
+            settingsTextRects.append(rect)
+
+            backgroundUpdaterRect = rect.copy()
+            backgroundUpdaterRect.width = displaySize[0]
+            self.displaySurface.blit(backgroundSurf, backgroundUpdaterRect, backgroundUpdaterRect)
+            self.displaySurface.blit(surf, rect)
+            
+
+        mousePos = pygame.mouse.get_pos()
+        for i in range(len(settingsTextRects)):
+            if i % 2 == 1 or i >= len(settingsTextRects) - 2:
+                if settingsTextRects[i].collidepoint(mousePos):
+                    newSurf = self.getFontSurfacesFromString(settingsTexts[i] + "\n" + longestText,
+                        maxTextSize=(displaySize[0]/3, displaySize[1]/((len(settingsTexts)+1)/2)),
+                        fontColor=(212, 219, 66))[0]
+                    
+                    #blits the background
+                    # self.displaySurface.blit(backgroundSurf, settingsTextRects[i], settingsTextRects[i])
+                    self.displaySurface.blit(newSurf, settingsTextRects[i])
+                    break
+        
+        for event in pygame.event.get(eventtype=pygame.MOUSEBUTTONUP):
+            if event.type == pygame.MOUSEBUTTONUP:
+                clickPos = pygame.mouse.get_pos()
+        
+                for i in range(len(settingsTextRects)):
+                    if i % 2 == 1 or i >= len(settingsTextRects) - 2:
+                        if settingsTextRects[i].collidepoint(clickPos):
+                            #go back
+                            if i == len(settingsTextRects)-2:
+                                returnString = "go_back"
+                            #apply
+                            elif i == len(settingsTextRects)-1:
+                                self.saveSettings()
+                                if self.settings["fullscreen"]:
+                                    self.displaySurface = pygame.display.set_mode(self.settings["resolution"], pygame.FULLSCREEN)
+                                else:
+                                    self.displaySurface = pygame.display.set_mode(self.settings["resolution"])
+                                self._cachedLastRenderedFunction = "apply"
+                                returnString = "num_of_rounds " + str(self.settings["num_of_rounds"])
+                                self.graphics = self.settings["texture_pack"]
+                            #resolution
+                            elif settingsTexts[i-1] == "Resolution":
+                                index = self.settings["resolutions"].index(self.settings["resolution"])
+                                if  index > 0:
+                                    self.settings["resolution"] = self.settings["resolutions"][index - 1]
+                                    self.settings["resolutionStr"] = str(self.settings["resolution"][0]) + "×" + str(self.settings["resolution"][1])
+
+                                else:
+                                    self.settings["resolution"] = self.settings["resolutions"][-1]
+                                    self.settings["resolutionStr"] = str(self.settings["resolution"][0]) + "×" + str(self.settings["resolution"][1])
+                            #texture pack
+                            elif settingsTexts[i-1] == "Texture pack":
+                                index = self.settings["texture_packs"].index(self.settings["texture_pack"])
+                                if  index > 0:
+                                    self.settings["texture_pack"] = self.settings["texture_packs"][index - 1]
+
+                                else:
+                                    self.settings["texture_pack"] = self.settings["texture_packs"][-1]
+
+                            #fullscreen
+                            elif settingsTexts[i-1] == "Fullscreen":
+                                self.settings["fullscreen"] = not self.settings["fullscreen"]
+
+                            #number of rounds
+                            elif settingsTexts[i-1] == "Number of rounds":
+                                if self.settings["num_of_rounds"] + 1 <= self.settings["max_round_num"]:
+                                    self.settings["num_of_rounds"] += 1
+                                else:
+                                    self.settings["num_of_rounds"] = 1
+
+        if self._cachedLastRenderedFunction != "renderSettings":
+            if self._cachedLastRenderedFunction != "apply":
+                self._cachedLastRenderedFunction = "renderSettings"
+            else:
+                self._cachedLastRenderedFunction = "applySettings"
+            pygame.display.update()
+        else:
+            pygame.display.update()
+
+            # pygame.display.update(menuTextRects)
+
+        self.checkIfPygameExit()
+        framerate = 1000/self.clock.tick(FPS)
+        # print(framerate)
+        if returnString == "Quit":
+            self.onExit()
+        else:
+            return returnString
+    
+    def renderCredits(self):
+        returnString = ""
+        displaySize = self.displaySurface.get_size()
+
+        creditsSurf = self.getTexture("background_credits")
+        creditsSurf = pygame.transform.scale(creditsSurf, displaySize)
+        if self._cachedLastRenderedFunction != "renderCredits":
+            self._cachedLastRenderedFunction = "renderCredits"
+            self.displaySurface.blit(creditsSurf, (0,0))
+
+        quitButtonSurf = self.getFontSurfacesFromString("Go back", maxTextSize=(displaySize[0]/4, displaySize[1]/6))[0]
+        quitButtonRect = quitButtonSurf.get_rect()
+        quitButtonRect.center = (displaySize[0]/2, displaySize[1]*0.85)
+        self.displaySurface.blit(quitButtonSurf, quitButtonRect)
+
+        mousePos = pygame.mouse.get_pos()
+        if quitButtonRect.collidepoint(mousePos):
+            newSurf = self.getFontSurfacesFromString("Go back", maxTextSize=(
+                displaySize[0]/4, displaySize[1]/6), fontColor=(212, 219, 66))[0]
+            #blits the background
+            self.displaySurface.blit(creditsSurf, quitButtonRect, quitButtonRect)
+            self.displaySurface.blit(newSurf, quitButtonRect)
+        
+        for event in pygame.event.get(eventtype=pygame.MOUSEBUTTONUP):
+            if event.type == pygame.MOUSEBUTTONUP:
+                clickPos = pygame.mouse.get_pos()
+        
+                if quitButtonRect.collidepoint(clickPos):
+                    returnString = "go_back"
+
+        self.update()
+        self.checkIfPygameExit()
+        self.clock.tick(FPS)
+        return returnString
 
     def renderGoingBack(self, tilePath, currentPlayers, pastPlayers):
         # temporary lacking animation
@@ -643,8 +985,8 @@ class Renderer():
         duration = 2  # in seconds
         tStart = time.time()
         while time.time() - tStart < duration:
-            self.clock.tick(FPS)
             self.checkIfPygameExit()
+            self.clock.tick(FPS)
 
         nicknamesInBase = []
         nicknamesExploring = []
@@ -686,7 +1028,25 @@ class Renderer():
         duration = 2
         tStart = time.time()
         while time.time() - tStart < duration:
+            # to do, render pause
+            # for event in pygame.event.get():
+            #     print(event)
+            #     if event.type == pygame.KEYUP:
+            #         if event.key == pygame.K_ESCAPE:
+            #             print("escape up")
+            #             returnString = ""
+            #             tPauseStart = time.time()
+            #             while returnString == "":
+            #                 returnString = self.renderPause()
+            #             self.renderGoingBack(tilePath, currentPlayers, pastPlayers)
+            #             if returnString == "Resume":
+            #                 print("Return")
+            #                 tPauseStop = time.time()
+            #                 duration += tPauseStop - tPauseStart
+            #             elif returnString == "Menu":
+            #                 print("place holder go back")
             self.checkIfPygameExit()
+                
             self.clock.tick(FPS)
 
     def showRevealedTile(self, tilePath, playersDicts):
@@ -1100,11 +1460,13 @@ class Renderer():
 
 
 if __name__ == "__main__":
-    resolution = (1920, 1080)
-    renderer = Renderer(resolution=resolution, fullscreen=True)
+    resolution = (1280, 720)
+    renderer = Renderer(resolution=resolution, fullscreen=False)
+    renderer.clearCache()
 
     while True:
-        renderer.renderMenu()
+        renderer.renderRules()
+        # renderer.renderGoingBack([], {}, {})
 
     # renderer.updatePlayersJoined([str(i) for i in range(9)])
 

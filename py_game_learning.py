@@ -22,7 +22,7 @@ def getOnlyLetters(text, maxHeight):
     rSurface = pygame.Surface((myfont.size(text)[0], myfont.get_ascent()))
     rSurface.blit(textSurf, (0,0))
     tStop = time.time()
-    print("Time needed for calculation:", tStop-tStart)
+    # print("Time needed for calculation:", tStop-tStart)
     return rSurface
 
 
@@ -32,6 +32,9 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             quit()
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_ESCAPE:
+                print("escape up")
     displaySurface.fill((0,0,0))
     numSurf = getOnlyLetters("1", round(600*0.75))
     roundSurf = getOnlyLetters("round", round(600*0.15))
