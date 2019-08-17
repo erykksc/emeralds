@@ -153,11 +153,12 @@ class WebServer(tornado.web.Application):
             (r"/client.js", ClientJsRequestHandler),
             (r"/graphics/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(basedir, "server","graphics")}),
             (r"/scripts/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(basedir, "server","scripts")}),
+            (r"/stylesheets/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(basedir, "server","stylesheets")}),
             (r"/socketserver", normalWebSocket),
             (r"/adminwebsocket", adminWebSocket)
         ]
 
-        define('port', default=8888, help='port to listen on')
+        define('port', default=7878, help='port to listen on')
         define('ip', default="localhost", help='ip to listen on')
         define("websocket_max_message_size", default=128, help="max length in bytes of the socket message")
 
@@ -169,8 +170,8 @@ class WebServer(tornado.web.Application):
 
         super().__init__(handlers, options.websocket_max_message_size)
 
-    def run(self, port=8888):
-        self.listen(port)
+    def run(self):
+        self.listen(options.port)
         tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == "__main__":

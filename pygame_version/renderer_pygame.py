@@ -106,6 +106,8 @@ class Renderer():
                 "trap_spiders": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tiles", "Tile_Trap_Spider.png")).convert(),
                 "trap_snakes": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tiles", "Tile_Trap_Snakes.png")).convert(),
                 "trap_wreckingball": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tiles", "Tile_Trap_Wreckingball.png")).convert(),
+                "trap_tiger": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Tiles", "Tile_Trap_Tiger.png")).convert(),
+
 
                 "background_cave": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Backgrounds", "Background_Cave.png")).convert(),
                 "background_welcome": pygame.image.load(os.path.join(basedir, "assets", "graphics", graphics, "Backgrounds", "Background_Welcome.png")).convert(),
@@ -292,7 +294,7 @@ class Renderer():
     def onExit(self):
         self.saveCache()
         pygame.quit()
-        quit()
+        sys.exit()
 
     def getTexture(self, tileName):
         # final version should be:
@@ -395,14 +397,16 @@ class Renderer():
                     text = ""
 
             elif tileName[:4] == "trap":
-                trapName = tileName[5:]
-
-                if trapName in ("lava", "spiders", "snakes", "wreckingball"):
-                    textureName = "trap_" + trapName
-                    text = ""
-                else:
-                    textureName = "trap_default"
-                    text = trapName
+                textureName = tileName
+                # trapName = tileName[5:]
+                # textureName = "trap_" + trapName
+                # text = ""
+                # if trapName in ("lava", "spiders", "snakes", "wreckingball"):
+                #     textureName = "trap_" + trapName
+                #     text = ""
+                # else:
+                #     textureName = "trap_default"
+                #     text = trapName
 
             else:
                 textureName = tileName
@@ -463,8 +467,8 @@ class Renderer():
                 differenceHeight = longestTextSize[1] - maxTextSize[1]
                 font = pygame.font.SysFont(fontStyle, size)
                 longestTextSize = font.size(longestText)
-                print("size:", size, ",", longestTextSize)
-                print("difference in width:", differenceWidth, "difference in height:", differenceHeight)
+                # print("size:", size, ",", longestTextSize)
+                # print("difference in width:", differenceWidth, "difference in height:", differenceHeight)
                 
             # print("found fontSize:", size)
             fontSize = size
@@ -886,6 +890,8 @@ class Renderer():
         self.checkIfPygameExit()
         framerate = 1000/self.clock.tick(FPS)
         # print(framerate)
+        if pygame.key.get_pressed()[pygame.K_ESCAPE]:
+            returnString = "go_back"
         if returnString == "Quit":
             self.onExit()
         else:
@@ -924,6 +930,8 @@ class Renderer():
         self.update()
         self.checkIfPygameExit()
         self.clock.tick(FPS)
+        if pygame.key.get_pressed()[pygame.K_ESCAPE]:
+            returnString = "go_back"
         return returnString
 
     def renderGoingBack(self, tilePath, currentPlayers, pastPlayers):

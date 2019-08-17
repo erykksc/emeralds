@@ -1,0 +1,19 @@
+p {
+	color:red;
+	text-align: center;
+	width: 100%;
+}
+
+
+h1{
+	text-align: center;
+	width: 100vw;
+	font-size: 15vh;
+}
+
+input{
+	text-align: center;
+	width: 100%;
+	height: 15vh;
+	font-size: 5vmin;
+}

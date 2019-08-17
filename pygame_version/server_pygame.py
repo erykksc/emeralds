@@ -25,7 +25,7 @@ def start_server(webserver):
 class Server():
     def __init__(self):
         webserver = internal_webserver.WebServer()
-        webserverThread = threading.Thread(target = start_server, args=(webserver,))
+        webserverThread = threading.Thread(target=start_server, args=(webserver,))
         webserverThread.daemon = True
         webserverThread.start()
 
