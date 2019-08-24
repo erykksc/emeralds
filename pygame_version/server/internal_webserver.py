@@ -21,6 +21,22 @@ def send_to_all(message):
     for connection in connections:
         connection.write_message(message)
 
+def disconnectEverybody():
+    for connection in connections:
+        print(connection.request.remote_ip, "Disconnected")
+        connection.close()
+        try:
+            info = jsonED.readFromJson()
+            del info["players"][usernames[connection]]
+            jsonED.write2json(info)
+
+            del usernames[connection]
+
+        except KeyError:
+            #player didn't enter the nickname and has diconnected
+            pass
+        connections.remove(connection)
+
 class IndexRequestHandler(tornado.web.RequestHandler):
     def get(self):
         self.set_status(200)
@@ -111,10 +127,10 @@ class adminWebSocket(tornado.websocket.WebSocketHandler):
             for key, value in usernames.items():
                 if value == data[1]:
                     websocket = key
+                    dataToSend = " ".join(data[2:])
+                    websocket.write_message(dataToSend)
+                    self.write_message("Sending message")
                     break
-            dataToSend = " ".join(data[2:])
-            websocket.write_message(dataToSend)
-            self.write_message("Sending message")
 
         elif data[0] == "changeAccept":
             #example: changeAccept d True
@@ -139,6 +155,10 @@ class adminWebSocket(tornado.websocket.WebSocketHandler):
                 info["players"][player]["currentDecision"] = False
             jsonED.write2json(info)
             self.write_message("Decisions reset")
+        
+        elif data[0]=="disconnectEverybody":
+            disconnectEverybody()
+            self.write_message("Everybody disconnected")
 
 
     def on_close(self):
@@ -158,7 +178,7 @@ class WebServer(tornado.web.Application):
             (r"/adminwebsocket", adminWebSocket)
         ]
 
-        define('port', default=7878, help='port to listen on')
+        define('port', default=8888, help='port to listen on')
         define('ip', default="localhost", help='ip to listen on')
         define("websocket_max_message_size", default=128, help="max length in bytes of the socket message")
 

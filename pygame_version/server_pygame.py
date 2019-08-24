@@ -62,6 +62,10 @@ class Server():
     def continuteToGame(self):
         info = readInfo()
         return info["continue"]
+    
+    def resetConnections(self):
+        self.ws.send("disconnectEverybody")
+        self.ws.recv()
 
     def startWaitingForNicknames(self):
         self.ws.send("changeAccept n True")

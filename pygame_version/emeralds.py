@@ -57,11 +57,12 @@ class Emeralds():
 
 	def addPlayersToGame(self):
 		#add players to a self.game
-		self.server.startWaitingForPlayers()
+		self.server.resetConnections()
+		waitingForPlayers = True
 		self.server.startWaitingForNicknames()
 		self.server.askPlayersForNicknames()
 		returnString = ""
-		while self.server.waitingForPlayers():
+		while waitingForPlayers:
 			#ask players to join and show players that have already joined
 			self.renderer.updatePlayersJoined(self.server.getPlayersNicknames())
 
@@ -69,7 +70,7 @@ class Emeralds():
 			returnString = self.renderer.renderPlayersJoined(self.gameIP, self.gamePort)
 
 			if self.server.continuteToGame() or returnString == "go_back":
-				self.server.stopWaitingForPlayers()
+				waitingForPlayers = False
 				self.server.stopWaitingForNicknames()
 		if returnString == "go_back":
 			self.menu()

@@ -398,6 +398,7 @@ class Renderer():
 
             elif tileName[:4] == "trap":
                 textureName = tileName
+                text = ""
                 # trapName = tileName[5:]
                 # textureName = "trap_" + trapName
                 # text = ""
