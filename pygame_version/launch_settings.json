@@ -1,9 +1,9 @@
 {
     "resolution": [
-        1024,
-        768
+        1920,
+        1080
     ],
-    "fullscreen": false,
+    "fullscreen": true,
     "num_of_rounds": 5,
     "texture_pack": "pola",
     "port": 9678

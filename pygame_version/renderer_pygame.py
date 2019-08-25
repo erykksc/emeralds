@@ -26,7 +26,9 @@ NUM_OF_PLAYER_SKINS = 8
 
 
 class Renderer():
-    def __init__(self, resolution=(800, 600), graphics="default", fullscreen=False, fontStyle="Comic Sans MS", fontColor=(255, 255, 255)):
+    def __init__(self, resolution=(800, 600), graphics="default", fullscreen=False, fontStyle="Comic Sans MS", fontColor=(255, 255, 255), port=0):
+        self.port = port
+
         global BASE_TILES_NAMES_GLOBAL
         global WIDTH_WHOLE_MAP_GLOBAL
         global HEIGHT_WHOLE_MAP_GLOBAL
@@ -228,7 +230,8 @@ class Renderer():
                 "resolution": self.settings["resolution"],
                 "fullscreen" : self.settings["fullscreen"],
                 "num_of_rounds" : self.settings["num_of_rounds"],
-                "texture_pack" : self.settings["texture_pack"]
+                "texture_pack" : self.settings["texture_pack"],
+                "port" : self.port
             }
             json.dump(settingsDict, f, indent=4)
 
@@ -426,7 +429,7 @@ class Renderer():
             self._cachedLastTexture[1] = tileTexture
             return tileTexture
 
-    def getFontSurfacesFromString(self, text, fontSize=None, fontStyle=None, fontColor=None, backgroundColor=None, maxTextSize=None, antialias=False):
+    def getFontSurfacesFromString(self, text, fontSize=None, fontStyle=None, fontColor=None, backgroundColor=None, maxTextSize=None, antialias=True):
         # tStart = time.time()
         if not fontStyle:
             fontStyle = self.fontStyle

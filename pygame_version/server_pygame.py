@@ -37,7 +37,7 @@ class Server():
         info = readInfo()
 
         self.ip = str(info["ip"])
-        self.port = str(info["port"])
+        self.port = str(port)
         url = "ws://" + self.ip + ":" + self.port + "/adminwebsocket"
         print("Connecting to:", url)
         connected = False

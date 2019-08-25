@@ -191,6 +191,7 @@ class WebServer(tornado.web.Application):
         super().__init__(handlers, options.websocket_max_message_size)
 
     def run(self, port):
+        print("starting server at port:", port)
         self.listen(port)
         tornado.ioloop.IOLoop.instance().start()
 

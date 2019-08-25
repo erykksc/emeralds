@@ -1,5 +1,7 @@
 .vscode/
 pygame_version/build/
+pygame_version/env/
+pygame_version/env/**
 !pygame_version/build/release/
 pygame_version/launch_settings.json
 pygame_version/players_info.json

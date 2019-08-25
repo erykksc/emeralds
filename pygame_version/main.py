@@ -8,6 +8,11 @@ BASE_DIR = os.path.abspath("")
 try:
     with open(os.path.join(BASE_DIR, "launch_settings.json")) as f:
         settings = json.load(f)
+        settings["num_of_rounds"]
+        settings["resolution"]
+        settings["fullscreen"]
+        settings["texture_pack"]
+        settings["port"]
 except:
     with open(os.path.join(BASE_DIR, "launch_settings.json"), "w") as f:
         settingsDict = {

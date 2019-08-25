@@ -9,7 +9,7 @@ class Emeralds():
 		self.gameIP = ""
 		self.gamePort = ""
 		self.game = None 
-		self.renderer = renderer_pygame.Renderer(resolution=resolution, fullscreen=fullscreen, graphics=graphics)
+		self.renderer = renderer_pygame.Renderer(resolution=resolution, fullscreen=fullscreen, graphics=graphics, port=port)
 		self.round = 0
 		self.numOfRounds = numOfRounds
 
