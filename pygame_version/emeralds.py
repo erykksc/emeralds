@@ -4,7 +4,7 @@ import server_pygame
 
 class Emeralds():
 
-	def __init__(self, numOfRounds=5, resolution=(800, 600), fullscreen=False, graphics="default"):
+	def __init__(self, numOfRounds=5, resolution=(800, 600), fullscreen=False, graphics="default", port=8888):
 		self.server = None
 		self.gameIP = ""
 		self.gamePort = ""
@@ -14,6 +14,8 @@ class Emeralds():
 		self.numOfRounds = numOfRounds
 
 		self.serverReady = False
+
+		self.gamePort = port
 
 	def main(self):
 		self.menu()
@@ -44,9 +46,9 @@ class Emeralds():
 	def setUpGame(self):
 		if not self.serverReady:
 
-			self.server = server_pygame.Server()
+			self.server = server_pygame.Server(self.gamePort)
 			self.gameIP = self.server.getIp()
-			self.gamePort = self.server.getPort()
+			# self.gamePort = self.server.getPort()
 			self.serverReady = True
 		
 		self.game = game_Module.Game()

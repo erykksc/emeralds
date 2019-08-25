@@ -190,8 +190,8 @@ class WebServer(tornado.web.Application):
 
         super().__init__(handlers, options.websocket_max_message_size)
 
-    def run(self):
-        self.listen(options.port)
+    def run(self, port):
+        self.listen(port)
         tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == "__main__":

@@ -18,14 +18,14 @@ def readInfo():
             time.sleep(0.05)
             continue
 
-def start_server(webserver):
+def start_server(webserver, port):
     asyncio.set_event_loop(asyncio.new_event_loop())
-    webserver.run()
+    webserver.run(port)
 
 class Server():
-    def __init__(self):
+    def __init__(self, port):
         webserver = internal_webserver.WebServer()
-        webserverThread = threading.Thread(target=start_server, args=(webserver,))
+        webserverThread = threading.Thread(target=start_server, args=(webserver, port,))
         webserverThread.daemon = True
         webserverThread.start()
 

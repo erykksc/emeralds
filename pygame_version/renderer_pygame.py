@@ -567,8 +567,8 @@ class Renderer():
 
             maxRulesTextSize = (self.displaySurface.get_width(),
                 (self.displaySurface.get_height() - bannerHeight)/len(self.rules.split("\n")))#/len(self.rules.split("\n")) )
-            print("max rules size:", maxRulesTextSize)
-            print("rules length", len(self.rules.split("\n")))
+            # print("max rules size:", maxRulesTextSize)
+            # print("rules length", len(self.rules.split("\n")))
             rulesSurfaces = self.getFontSurfacesFromString(
                 self.rules, maxTextSize=maxRulesTextSize)
             ruleSurfHeight = rulesSurfaces[0].get_height()
