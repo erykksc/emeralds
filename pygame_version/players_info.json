@@ -1,7 +1,13 @@
 {
-    "last_update": "Sun Aug 25 13:44:23 2019",
-    "ip": "192.168.1.135",
+    "last_update": "Wed Jan  1 00:08:25 2020",
+    "ip": "192.168.188.54",
     "port": 8888,
     "continue": false,
-    "players": {}
+    "players": {
+        "Hmmmajfjrdhuejdnd": {
+            "decisions": false,
+            "currentDecision": true,
+            "decision": "false"
+        }
+    }
 }
