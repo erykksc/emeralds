@@ -5,9 +5,10 @@ pygame_version/env/
 pygame_version/env/**
 !pygame_version/build/release/
 pygame_version/launch_settings.json
-pygame_version/players_info.json
 pygame_version/__pycache__/
 pygame_version/cache.cache
 pygame_version/players_info.json
+.venv/
+sync/
 
 *.pyc
