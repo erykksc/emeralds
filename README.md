@@ -20,7 +20,7 @@ Players connect via web browser (for example on their phones) to the WebSocket s
 
 ## Demo
 
-https://github.com/user-attachments/assets/2abd7c07-42fd-4d7d-9201-5425b3416ac0
+https://github.com/user-attachments/assets/321e40ff-1cef-4b83-a4a8-a431eebb1f19
 
 ## Setup
 
