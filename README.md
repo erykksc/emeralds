@@ -5,7 +5,7 @@ Features a Pygame renderer and Tornado WebSocket server for multiplayer.
 
 Players connect via web browser (for example on their phones) to the WebSocket server (`http://<ip>:<port>`) to control their actions.
 
-## Demo
+<img width="2560" height="1440" alt="Screenshot From 2026-06-12 16-54-58" src="https://github.com/user-attachments/assets/d6cc2b2b-15a3-46fa-baec-d78069b90d07" />
 
 ## Rules
 
@@ -17,6 +17,10 @@ Players connect via web browser (for example on their phones) to the WebSocket s
 - If the same type of trap is triggered twice in one round, all exploring players lose all gems collected that round.
 - You can go back at any time to save the gems you've collected this round and pick up any gems left behind (split equally among returning players).
 - The longer you explore the more gems you can collect, but the danger to lose them all increases
+
+## Demo
+
+https://github.com/user-attachments/assets/2abd7c07-42fd-4d7d-9201-5425b3416ac0
 
 ## Setup
 
