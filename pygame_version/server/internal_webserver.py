@@ -40,11 +40,14 @@ def disconnectEverybody():
 class IndexRequestHandler(tornado.web.RequestHandler):
     def get(self):
         self.set_status(200)
-        self.render("static/index.html")
+        with open(os.path.join(os.path.dirname(__file__), "static", "index.html")) as f:
+            self.write(f.read())
 
 class ClientJsRequestHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render("static/client.js")
+        self.set_status(200)
+        with open(os.path.join(os.path.dirname(__file__), "scripts", "client.js")) as f:
+            self.write(f.read())
 
 class normalWebSocket(tornado.websocket.WebSocketHandler):
 
@@ -134,7 +137,7 @@ class adminWebSocket(tornado.websocket.WebSocketHandler):
 
         elif data[0] == "changeAccept":
             #example: changeAccept d True
-            accept[data[1]] = True if data[2] == "True" else "False"
+            accept[data[1]] = data[2] == "True"
             print("Changing accept", data[1], "to", data[2])
             self.write_message(str(accept))
         
@@ -167,13 +170,13 @@ class adminWebSocket(tornado.websocket.WebSocketHandler):
 
 class WebServer(tornado.web.Application):
     def __init__(self):
-        basedir = os.path.abspath("")
+        basedir = os.path.dirname(__file__)
         handlers=[
             (r"/", IndexRequestHandler),
             (r"/client.js", ClientJsRequestHandler),
-            (r"/graphics/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(basedir, "server","graphics")}),
-            (r"/scripts/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(basedir, "server","scripts")}),
-            (r"/stylesheets/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(basedir, "server","stylesheets")}),
+            (r"/graphics/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(basedir, "graphics")}),
+            (r"/scripts/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(basedir, "scripts")}),
+            (r"/stylesheets/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(basedir, "stylesheets")}),
             (r"/socketserver", normalWebSocket),
             (r"/adminwebsocket", adminWebSocket)
         ]
@@ -184,11 +187,18 @@ class WebServer(tornado.web.Application):
 
         jsonED.createJson()
         info = jsonED.readFromJson()
-        info["ip"] = socket.gethostbyname(socket.gethostname())
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.connect(("8.8.8.8", 1))
+            info["ip"] = s.getsockname()[0]
+        except Exception:
+            info["ip"] = "127.0.0.1"
+        finally:
+            s.close()
         info["port"] = options.port
         jsonED.write2json(info)
 
-        super().__init__(handlers, options.websocket_max_message_size)
+        super().__init__(handlers, websocket_max_message_size=options.websocket_max_message_size)
 
     def run(self, port):
         print("starting server at port:", port)

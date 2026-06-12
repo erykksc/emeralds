@@ -1,13 +1,7 @@
 {
-    "last_update": "Wed Jan  1 00:08:25 2020",
-    "ip": "192.168.188.54",
+    "last_update": "Fri Jun 12 02:47:42 2026",
+    "ip": "192.168.178.21",
     "port": 8888,
     "continue": false,
-    "players": {
-        "Hmmmajfjrdhuejdnd": {
-            "decisions": false,
-            "currentDecision": true,
-            "decision": "false"
-        }
-    }
+    "players": {}
 }

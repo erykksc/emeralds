@@ -9,14 +9,17 @@ import pickle
 import json
 # import game_Module
 
-from ctypes import windll
-windll.user32.SetProcessDPIAware()
+import platform
+
+if platform.system() == "Windows":
+    from ctypes import windll
+    windll.user32.SetProcessDPIAware()
 
 
 BASE_TILES_NAMES_GLOBAL = [["base", "base"] for _ in range(2)]
 WIDTH_WHOLE_MAP_GLOBAL = 8
 HEIGHT_WHOLE_MAP_GLOBAL = 6
-rulesPath = os.path.join(os.path.abspath(""), "assets", "texts", "rules.txt")
+rulesPath = os.path.join(os.path.dirname(__file__), "assets", "texts", "rules.txt")
 
 RULES_GLOBAL = ""
 with open(rulesPath, "r") as f:
@@ -85,7 +88,7 @@ class Renderer():
             "texture_pack" : graphics
         }
 
-        basedir = os.path.abspath("")
+        basedir = os.path.dirname(__file__)
         # self.renderingArr = [False, False, False, False] #indexes 0- askPlayersToJoin, 1-showRules, 2-waitForDecisions, 3-showEndOfGameScreen
         if self.graphics == "default":
             self.textures = {
@@ -182,7 +185,7 @@ class Renderer():
         self.loadCache()
 
     def loadCache(self):
-        basedir = os.path.abspath("")
+        basedir = os.path.dirname(__file__)
 
         try:
             with open(os.path.join(basedir, "cache.cache"), "rb") as f:
@@ -199,7 +202,7 @@ class Renderer():
         self._cachedLastTexture = ["", 0]
 
     def saveCache(self):
-        basedir = os.path.abspath("")
+        basedir = os.path.dirname(__file__)
 
         try:
             with open(os.path.join(basedir, "cache.cache"), "rb") as f:
@@ -224,7 +227,7 @@ class Renderer():
         self._cachedLastTexture = ["", 0]
 
     def saveSettings(self):
-        BASE_DIR = os.path.abspath("")
+        BASE_DIR = os.path.dirname(__file__)
         with open(os.path.join(BASE_DIR, "launch_settings.json"), "w") as f:
             settingsDict = {
                 "resolution": self.settings["resolution"],
@@ -760,7 +763,7 @@ class Renderer():
     def renderSettings(self):
         
         if self._cachedLastRenderedFunction != "renderSettings":
-            with open(os.path.join(os.path.abspath(""), "launch_settings.json")) as f:
+            with open(os.path.join(os.path.dirname(__file__), "launch_settings.json")) as f:
                 settings = json.load(f)
             self.settings["num_of_rounds"] = settings["num_of_rounds"]
             

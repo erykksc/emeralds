@@ -6,6 +6,7 @@ from pprint import pprint
 
 import pickle
 
+import platform
 import ctypes
 
 
@@ -91,7 +92,8 @@ class TileMapRenderingTestCase(unittest.TestCase):
         self.assertEqual(surfaceToCheck, correctTileMapSurface)
 
 if __name__=="__main__":
-    ctypes.windll.user32.SetProcessDPIAware()
+    if platform.system() == "Windows":
+        ctypes.windll.user32.SetProcessDPIAware()
     #true_res = (windll.user32.GetSystemMetrics(0),windll.user32.GetSystemMetrics(1))
 
     renderer = renderer_pygame.Renderer(resolution = (1920,1080), fullscreen = True)

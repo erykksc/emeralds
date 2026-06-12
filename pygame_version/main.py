@@ -3,7 +3,7 @@ import json
 import emeralds
 
 
-BASE_DIR = os.path.abspath("")
+BASE_DIR = os.path.dirname(__file__)
 
 try:
     with open(os.path.join(BASE_DIR, "launch_settings.json")) as f:

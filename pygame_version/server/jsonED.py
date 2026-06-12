@@ -4,7 +4,7 @@ import time
 
 FILE_NAME = "players_info.json"
 
-basedir = os.path.abspath("")
+basedir = os.path.dirname(os.path.dirname(__file__))
 
 def write2json(dic):
     with open(os.path.join(basedir, FILE_NAME), 'w') as f:

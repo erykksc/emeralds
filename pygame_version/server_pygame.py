@@ -6,7 +6,7 @@ import threading
 import asyncio
 from server import internal_webserver
 
-basedir = os.path.abspath("")
+basedir = os.path.dirname(__file__)
 
 def readInfo():
     while True:
@@ -38,12 +38,12 @@ class Server():
 
         self.ip = str(info["ip"])
         self.port = str(port)
-        url = "ws://" + self.ip + ":" + self.port + "/adminwebsocket"
+        url = "ws://127.0.0.1:" + self.port + "/adminwebsocket"
         print("Connecting to:", url)
         connected = False
         while not connected:
             try:
-                self.ws = create_connection(url)
+                self.ws = create_connection(url, timeout=3)
                 connected = True
             except:
                 time.sleep(0.05)
